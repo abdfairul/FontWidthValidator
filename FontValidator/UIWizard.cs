@@ -23,7 +23,6 @@ namespace FontValidator
         private Checkboxes m_checkboxes;
 
         private List<IDData> m_result_datas;
-        private List<ListView> m_report_listviews = new List<ListView>();
 
         private List<DRMData> m_result_drm_data = new List<DRMData>();
         private IDData id_drm = new IDData();
@@ -36,11 +35,17 @@ namespace FontValidator
 
         // this flag to indicate should we update or not
         private bool m_report_generated = false;
+        private SearchItem searchItem;
 
-        private Dictionary<string, List<int>> m_tab_enabler =
-            new Dictionary<string, List<int>>();
+        public struct SearchItem
+        {
+            public int currentSearchIndexListViewItem;
+            public int currentSearchIndexListViewSubItem;
+            public string currentSearchString;
+            public ListViewItem.ListViewSubItem previousFoundSubItem;
+            public Color previousFoundSubItemColor;
+        }
 
-        ProgressForm progressForm = new ProgressForm();
 
         public UIWizard()
         {
@@ -602,8 +607,6 @@ namespace FontValidator
                 drmForm.DRMSummary.Text = "TextBox ID: " + id_drm.textbox_id +
                           "; Width: " + id_drm.width.Value + "; Fontsize: " + 18;
             }));
-
-
         }
 
         private void show_relevant_columns()
@@ -633,9 +636,7 @@ namespace FontValidator
                             if (key_wo_prefix.Equals(column.Text))
                             {
                                 if (!j.Value)
-                                {
                                     column.Width = 0;
-                                }
                                 is_in_layout = true;
                                 break;
                             }
@@ -654,9 +655,7 @@ namespace FontValidator
                             if (key_wo_prefix.Equals(column.Text))
                             {
                                 if (!k.Value)
-                                {
                                     column.Width = 0;
-                                }
                                 is_in_layout = true;
                                 break;
                             }
@@ -855,10 +854,7 @@ namespace FontValidator
 
         private void wizardPage4_Enter(object sender, EventArgs e)
         {
-            if (m_report_generated)
-                show_relevant_columns();
 
-            viewDRMReport.Enabled = m_report_generated && m_result_drm_data.Count > 0;
         }
 
         private bool _getTolerance()
@@ -963,6 +959,14 @@ namespace FontValidator
 
         private void show_fail_combobox_SelectedIndexChanged(object sender, EventArgs e)
         {
+
+            searchItem.currentSearchIndexListViewItem = 0;
+            searchItem.currentSearchIndexListViewSubItem = 0;
+            searchItem.currentSearchString = String.Empty;
+            searchItem.previousFoundSubItem = new ListViewItem.ListViewSubItem();
+            searchItem.previousFoundSubItemColor = default(Color);
+            searchTextBox.Text = "";
+
             ProgressForm formx = new ProgressForm();
             formx.Text = "Updating selection..";
 
@@ -1318,15 +1322,13 @@ namespace FontValidator
             m_selected_tab_report = e.TabPage.Text;
         }
 
-        private int currentSearchIndexListViewItem = 0;
-        private int currentSearchIndexListViewSubItem = 0;
-        private string currentSearchString = "";
-
         private void searchButton_Click(object sender, EventArgs e)
         {
             if (searchTextBox.Text.Equals(string.Empty))
                 return;
 
+            if (searchItem.previousFoundSubItem != null)
+                searchItem.previousFoundSubItem.BackColor = searchItem.previousFoundSubItemColor;
 
             TabPage activeTab = new TabPage();
 
@@ -1345,46 +1347,114 @@ namespace FontValidator
             var listviews = GetAll(activeTab, typeof(ListView));
             var listview = (ListView)listviews.ElementAt(0);
 
-            bool notFound = true;
-            while (currentSearchIndexListViewItem < listview.Items.Count && notFound)
+            if (searchItem.currentSearchIndexListViewItem >= listview.Items.Count)
+                return;
+
+            if (searchItem.currentSearchString == null || !searchItem.currentSearchString.Equals(searchTextBox.Text))
             {
-                if (!currentSearchString.Equals(searchTextBox.Text))
-                {
-                    currentSearchIndexListViewItem = 0;
-                    currentSearchIndexListViewSubItem = 0;
-                }
-
-                currentSearchString = searchTextBox.Text;
-
-                var foundItem = listview.FindItemWithText(currentSearchString, true, currentSearchIndexListViewItem, true);
-                if (foundItem == null)
-                    break;
-
-                for (int j = 0; j < foundItem.SubItems.Count; j++)
-                {
-                    foundItem.SubItems[j].BackColor = default(Color);
-
-                    var subtext = foundItem.SubItems[j].Text;
-
-                    if (subtext.Contains(searchTextBox.Text))
-                    {
-                        if (currentSearchIndexListViewSubItem < j)
-                        {
-                            foundItem.SubItems[j].BackColor = Color.AliceBlue;
-                            listview.EnsureVisible(foundItem, j);
-                            currentSearchIndexListViewSubItem = j;
-                            currentSearchIndexListViewItem = foundItem.Index + 1;
-                            notFound = false;
-                            break;
-                        }
-
-                    }
-                }
-
-                
+                searchItem.currentSearchIndexListViewItem = 0;
+                searchItem.currentSearchIndexListViewSubItem = 0;
             }
 
+            searchItem.currentSearchString = searchTextBox.Text;
 
+            var foundItem = listview.FindItemWithText(searchItem.currentSearchString, true,
+                searchItem.currentSearchIndexListViewItem, true);
+
+            if (foundItem == null && searchItem.currentSearchIndexListViewItem == 0)
+            {
+                MessageBox.Show("Item not found");
+                return;
+            }
+
+            else if (foundItem == null && searchItem.currentSearchIndexListViewItem != 0)
+            {
+                searchItem.currentSearchIndexListViewItem = 0;
+                searchItem.currentSearchIndexListViewSubItem = 0;
+                foundItem = listview.FindItemWithText(searchItem.currentSearchString, true,
+                    searchItem.currentSearchIndexListViewItem, true);
+            }
+
+            var subitemindexfound = new List<int>();
+
+            listview.TopItem = foundItem;
+            foundItem.EnsureVisible();
+
+            for (int j = 0; j < foundItem.SubItems.Count; j++)
+            {
+                if (listview.Columns[j].Width == 0)
+                    continue;//skip hidden column
+
+                //foundItem.SubItems[j].BackColor = default(Color);
+
+                var subtext = foundItem.SubItems[j].Text;
+
+                var subtext_low = subtext.ToLower();
+                var searchtext_low = searchTextBox.Text.ToLower();
+
+                if (subtext_low.Contains(searchtext_low))
+                {
+                    subitemindexfound.Add(j);
+                }
+            }
+
+            if (subitemindexfound.Count == 1)
+            {
+                listview.EnsureVisible(foundItem, subitemindexfound[0]);
+                searchItem.previousFoundSubItem = foundItem.SubItems[subitemindexfound[0]];
+                searchItem.previousFoundSubItemColor = foundItem.SubItems[subitemindexfound[0]].BackColor;
+                foundItem.SubItems[subitemindexfound[0]].BackColor = Color.Yellow;
+
+                searchItem.currentSearchIndexListViewSubItem = 0;
+                searchItem.currentSearchIndexListViewItem = foundItem.Index + 1;
+            }
+            else if (subitemindexfound.Count > 1)
+            {
+                var subitemIndex = subitemindexfound[searchItem.currentSearchIndexListViewSubItem];
+
+                listview.EnsureVisible(foundItem, subitemIndex);
+                searchItem.previousFoundSubItem = foundItem.SubItems[subitemIndex];
+                searchItem.previousFoundSubItemColor = foundItem.SubItems[subitemIndex].BackColor;
+                foundItem.SubItems[subitemIndex].BackColor = Color.Yellow;
+
+                searchItem.currentSearchIndexListViewSubItem++;
+
+                if (searchItem.currentSearchIndexListViewSubItem >= subitemindexfound.Count)
+                {
+                    searchItem.currentSearchIndexListViewSubItem = 0;
+                    searchItem.currentSearchIndexListViewItem = foundItem.Index + 1;
+                }
+            }
+        }
+
+        private void wizardPage4_Commit(object sender, AeroWizard.WizardPageConfirmEventArgs e)
+        {
+            if (MessageBox.Show("Exiting...\nAre you sure?", "Exit",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void wizardPage4_Initialize(object sender, AeroWizard.WizardPageInitEventArgs e)
+        {
+            if (m_report_generated)
+                show_relevant_columns();
+            else
+                Generate_Click(sender, e);
+
+            viewDRMReport.Enabled = m_report_generated && m_result_drm_data.Count > 0;
+        }
+
+        private void searchTextBox_Click(object sender, EventArgs e)
+        {
+            searchTextBox.Clear();
+        }
+
+        private void show_fail_combobox_Click(object sender, EventArgs e)
+        {
+            show_fail_combobox.Text = "";
+            show_fail_combobox.DroppedDown = true;
         }
     }
 
@@ -1392,7 +1462,7 @@ namespace FontValidator
     {
         const Int32 LVM_FIRST = 0x1000;
         const Int32 LVM_SCROLL = LVM_FIRST + 20;
-        const int MARGIN = 20;
+        const int MARGIN = 0;
 
         [DllImport("user32")]
         static extern IntPtr SendMessage(IntPtr Handle, Int32 msg, IntPtr wParam,
@@ -1432,8 +1502,7 @@ namespace FontValidator
             }
 
             // scroll to the item row.
-            listView.TopItem = listViewItem;
-            listViewItem.EnsureVisible();
+
             Rectangle bounds = listViewItem.SubItems[subItemIndex].Bounds;
 
             // need to set width from columnheader, first subitem includes
@@ -1441,17 +1510,19 @@ namespace FontValidator
             bounds.Width = listView.Columns[subItemIndex].Width;
 
             int scrollToLeft = bounds.X + bounds.Width + MARGIN;
-            if (scrollToLeft > listView.Bounds.Width)
-            {
-                listView.Handle.ScrollHorizontal(scrollToLeft - listView.Bounds.Width);
-            }
-            else
+            //if (scrollToLeft > listView.Bounds.Width)
+            //{
+            //    var s1 = scrollToLeft - listView.Bounds.Width;
+            //    var s2 = s1 - bounds.Width;
+            //    listView.Handle.ScrollHorizontal(s2);
+            //}
+            //else
             {
                 int scrollToRight = bounds.X - MARGIN;
-                if (scrollToRight < 0)
-                {
-                    listView.Handle.ScrollHorizontal(scrollToRight);
-                }
+                //if (scrollToRight < 0)
+                //{
+                listView.Handle.ScrollHorizontal(scrollToRight);
+                //}
             }
         }
     }

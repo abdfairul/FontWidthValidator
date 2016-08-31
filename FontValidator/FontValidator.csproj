@@ -74,7 +74,8 @@
       <HintPath>..\packages\AeroWizard.2.1.7\lib\net452\AeroWizard.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpFont">
+    <Reference Include="SharpFont, Version=3.1.0.200, Culture=neutral, PublicKeyToken=48add4c483071cdf, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpFont\SharpFont.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -206,6 +207,10 @@
     <None Include="Resources\search.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(SolutionDir)packages\SharpFont\x64" "$(TargetDir)"
+copy "$(SolutionDir)packages\SharpFont\x86" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

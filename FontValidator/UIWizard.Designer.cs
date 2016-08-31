@@ -29,31 +29,31 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem(new string[] {
             "(editable)",
             "(can add multiple files here, example below)"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem(new string[] {
             "EN",
             ".../rc_magnavox/rc_EN/Str.rc"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem11 = new System.Windows.Forms.ListViewItem(new string[] {
             "ES",
             ".../rc_magnavox/rc_ES/Str.rc"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem12 = new System.Windows.Forms.ListViewItem(new string[] {
             "FR",
             ".../rc_magnavox/rc_FR/Str.rc"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem13 = new System.Windows.Forms.ListViewItem(new string[] {
             "0",
             "(can add multiple files here, example below)",
             "0 KB"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem14 = new System.Windows.Forms.ListViewItem(new string[] {
             "1",
             "../src/Mapp_4KDemoModeApp.cpp",
             "100 KB"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem15 = new System.Windows.Forms.ListViewItem(new string[] {
             "2",
             "../src/Mapp_4KDemoModeFrame.cpp",
             "200 KB"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem(new System.Windows.Forms.ListViewItem.ListViewSubItem[] {
+            System.Windows.Forms.ListViewItem listViewItem16 = new System.Windows.Forms.ListViewItem(new System.Windows.Forms.ListViewItem.ListViewSubItem[] {
             new System.Windows.Forms.ListViewItem.ListViewSubItem(null, "3"),
             new System.Windows.Forms.ListViewItem.ListViewSubItem(null, "../src/Mapp_AgingMenuApp.cpp"),
             new System.Windows.Forms.ListViewItem.ListViewSubItem(null, "300 KB", System.Drawing.SystemColors.ControlDarkDark, System.Drawing.SystemColors.Window, new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.World))}, -1);
@@ -340,7 +340,7 @@
             this.groupBox1.Controls.Add(this.ResourceFilesStrListView);
             this.groupBox1.Location = new System.Drawing.Point(15, 15);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(353, 397);
+            this.groupBox1.Size = new System.Drawing.Size(353, 409);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Resource files";
@@ -351,7 +351,7 @@
             this.label24.AutoSize = true;
             this.label24.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.World);
             this.label24.ForeColor = System.Drawing.Color.DimGray;
-            this.label24.Location = new System.Drawing.Point(12, 322);
+            this.label24.Location = new System.Drawing.Point(12, 334);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(267, 26);
             this.label24.TabIndex = 10;
@@ -371,7 +371,7 @@
             // ResourceFilesBrowseNum
             // 
             this.ResourceFilesBrowseNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 301);
+            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 313);
             this.ResourceFilesBrowseNum.Name = "ResourceFilesBrowseNum";
             this.ResourceFilesBrowseNum.Size = new System.Drawing.Size(54, 23);
             this.ResourceFilesBrowseNum.TabIndex = 5;
@@ -384,7 +384,7 @@
             this.ResourceFileNumTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ResourceFileNumTextBox.Enabled = false;
-            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 357);
+            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 369);
             this.ResourceFileNumTextBox.Name = "ResourceFileNumTextBox";
             this.ResourceFileNumTextBox.ReadOnly = true;
             this.ResourceFileNumTextBox.Size = new System.Drawing.Size(318, 23);
@@ -394,7 +394,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 305);
+            this.label2.Location = new System.Drawing.Point(13, 317);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(103, 15);
             this.label2.TabIndex = 3;
@@ -435,16 +435,16 @@
             this.ResourceFilesStrListView.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ResourceFilesStrListView.FullRowSelect = true;
             this.ResourceFilesStrListView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4});
+            listViewItem9,
+            listViewItem10,
+            listViewItem11,
+            listViewItem12});
             this.ResourceFilesStrListView.LabelEdit = true;
             this.ResourceFilesStrListView.Location = new System.Drawing.Point(16, 82);
             this.ResourceFilesStrListView.Name = "ResourceFilesStrListView";
             this.ResourceFilesStrListView.ShowGroups = false;
             this.ResourceFilesStrListView.ShowItemToolTips = true;
-            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 208);
+            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 220);
             this.ResourceFilesStrListView.TabIndex = 0;
             this.ResourceFilesStrListView.UseCompatibleStateImageBehavior = false;
             this.ResourceFilesStrListView.View = System.Windows.Forms.View.Details;
@@ -513,10 +513,10 @@
             this.CPPFilesListView.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.CPPFilesListView.FullRowSelect = true;
             this.CPPFilesListView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem5,
-            listViewItem6,
-            listViewItem7,
-            listViewItem8});
+            listViewItem13,
+            listViewItem14,
+            listViewItem15,
+            listViewItem16});
             this.CPPFilesListView.Location = new System.Drawing.Point(16, 69);
             this.CPPFilesListView.Margin = new System.Windows.Forms.Padding(0);
             this.CPPFilesListView.Name = "CPPFilesListView";
@@ -595,7 +595,7 @@
             this.checkBox1.AutoSize = true;
             this.checkBox1.Location = new System.Drawing.Point(117, 84);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(80, 19);
+            this.checkBox1.Size = new System.Drawing.Size(81, 19);
             this.checkBox1.TabIndex = 26;
             this.checkBox1.Tag = "001_Textbox ID";
             this.checkBox1.Text = "Textbox ID";
@@ -880,7 +880,7 @@
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(36, 22);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(35, 15);
+            this.label8.Size = new System.Drawing.Size(36, 15);
             this.label8.TabIndex = 22;
             this.label8.Text = "Value";
             // 
@@ -1029,7 +1029,7 @@
             this.label19.AutoSize = true;
             this.label19.Location = new System.Drawing.Point(9, 19);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(35, 15);
+            this.label19.Size = new System.Drawing.Size(36, 15);
             this.label19.TabIndex = 17;
             this.label19.Text = "Value";
             // 
@@ -1061,12 +1061,15 @@
             this.wizardPage4.Size = new System.Drawing.Size(737, 407);
             this.wizardPage4.TabIndex = 3;
             this.wizardPage4.Text = "Step 4 of 4 : Apply tolerance and view report";
+            this.wizardPage4.Commit += new System.EventHandler<AeroWizard.WizardPageConfirmEventArgs>(this.wizardPage4_Commit);
+            this.wizardPage4.Initialize += new System.EventHandler<AeroWizard.WizardPageInitEventArgs>(this.wizardPage4_Initialize);
             this.wizardPage4.Enter += new System.EventHandler(this.wizardPage4_Enter);
             // 
             // pictureBox1
             // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.Image = global::FontValidator.Properties.Resources.show;
-            this.pictureBox1.Location = new System.Drawing.Point(549, 16);
+            this.pictureBox1.Location = new System.Drawing.Point(559, 16);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(25, 25);
             this.pictureBox1.TabIndex = 11;
@@ -1074,6 +1077,7 @@
             // 
             // searchButton
             // 
+            this.searchButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.searchButton.FlatAppearance.BorderSize = 0;
             this.searchButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.searchButton.Image = ((System.Drawing.Image)(resources.GetObject("searchButton.Image")));
@@ -1086,11 +1090,13 @@
             // 
             // searchTextBox
             // 
+            this.searchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.searchTextBox.Location = new System.Drawing.Point(596, 16);
             this.searchTextBox.Name = "searchTextBox";
             this.searchTextBox.Size = new System.Drawing.Size(100, 23);
             this.searchTextBox.TabIndex = 9;
             this.searchTextBox.Text = "Search item..";
+            this.searchTextBox.Click += new System.EventHandler(this.searchTextBox_Click);
             // 
             // groupBox9
             // 
@@ -1134,12 +1140,13 @@
             "Failed \"WidthTest\" only",
             "Failed \"Height Test\" only",
             "Failed \"Width & Height Test\" only"});
-            this.show_fail_combobox.Location = new System.Drawing.Point(422, 16);
+            this.show_fail_combobox.Location = new System.Drawing.Point(432, 16);
             this.show_fail_combobox.Name = "show_fail_combobox";
             this.show_fail_combobox.Size = new System.Drawing.Size(121, 23);
             this.show_fail_combobox.TabIndex = 5;
             this.show_fail_combobox.Text = "Select NG items..";
             this.show_fail_combobox.SelectedIndexChanged += new System.EventHandler(this.show_fail_combobox_SelectedIndexChanged);
+            this.show_fail_combobox.Click += new System.EventHandler(this.show_fail_combobox_Click);
             // 
             // saveAs
             // 
