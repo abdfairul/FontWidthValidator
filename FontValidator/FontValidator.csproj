@@ -75,7 +75,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SharpFont">
-      <HintPath>..\..\SharpFont\Binaries\SharpFont\Release\SharpFont.dll</HintPath>
+      <HintPath>..\packages\SharpFont\SharpFont.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
