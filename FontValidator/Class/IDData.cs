@@ -17,6 +17,7 @@ namespace FontValidator
         public IDValuePair padding;
         public string multiline;
         public string scrollable;
+        public string rotated;
 
         public string text;
         public ConcurrentBag<StringResult> text_values = new ConcurrentBag<StringResult>();

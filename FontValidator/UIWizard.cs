@@ -1,41 +1,51 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows.Forms;
+using AeroWizard;
 using FontValidator.Class;
-using Excel = Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Interop.Excel;
+using Action = System.Action;
+using Application = Microsoft.Office.Interop.Excel.Application;
+using CheckBox = System.Windows.Forms.CheckBox;
+using Font = System.Drawing.Font;
+using Point = System.Drawing.Point;
 
 namespace FontValidator
 {
     public partial class UIWizard : Form
     {
-        private ReportMakerParameters m_report_param = new ReportMakerParameters();
-        private IEnumerable<Control> m_tab_children_controls;
-        private IEnumerable<Control> m_checkbox_controls;
-        private ListViewColumnSorter lvwColumnSorter;
-        private Checkboxes m_checkboxes;
-
-        private List<IDData> m_result_datas;
-
-        private List<DRMData> m_result_drm_data = new List<DRMData>();
-        private IDData id_drm = new IDData();
-
-        private string m_selected_tab_report;
-        private string m_selected_string = "";
-        private bool valid_contextmenu_location = false;
-
-        private DRMForm drmForm;
+        private DRMForm _drmForm;
+        private IDData _idDrm = new IDData();
+        private readonly ListViewColumnSorter _lvwColumnSorter;
+        private IEnumerable<Control> _mCheckboxControls;
+        private Checkboxes _mCheckboxes;
 
         // this flag to indicate should we update or not
-        private bool m_report_generated = false;
-        private SearchItem searchItem;
+        private bool _mReportGenerated;
+        private readonly ReportMakerParameters _mReportParam = new ReportMakerParameters();
+
+        private List<IDData> _mResultDatas;
+
+        private List<DRMData> _mResultDrmData = new List<DRMData>();
+        private string _mSelectedString = "";
+
+        private string _mSelectedTabReport;
+        private IEnumerable<Control> _mTabChildrenControls;
+        private SearchItem _searchItem;
+        private bool _validContextmenuLocation;
+        private ReportMaker _reportMaker;
+        private System.Windows.Forms.TextBox txtEditor = 
+            new System.Windows.Forms.TextBox { BorderStyle = BorderStyle.FixedSingle, Visible = false };
 
         public struct SearchItem
         {
@@ -46,22 +56,26 @@ namespace FontValidator
             public Color previousFoundSubItemColor;
         }
 
-
         public UIWizard()
         {
             InitializeComponent();
-            this.FormBorderStyle = FormBorderStyle.Sizable;
-            this.MinimumSize = new System.Drawing.Size(800, 600);
-            this.WindowState = FormWindowState.Maximized;
-            this.TopLevel = true;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MinimumSize = new Size(800, 600);
+            WindowState = FormWindowState.Maximized;
+            TopLevel = true;
 
-            lvwColumnSorter = new ListViewColumnSorter();
+            _lvwColumnSorter = new ListViewColumnSorter();
+        }
 
+        public sealed override Size MinimumSize
+        {
+            get { return base.MinimumSize; }
+            set { base.MinimumSize = value; }
         }
 
         private void ResourceFilesAddStr_Click(object sender, EventArgs e)
         {
-            OpenFileDialog op = new OpenFileDialog();
+            var op = new OpenFileDialog();
             op.Multiselect = true;
             op.Filter = "Resource files|Str.rc";
 
@@ -71,19 +85,19 @@ namespace FontValidator
                 ResourceFilesStrListView.Items.Clear();
                 ResourceFilesStrListView.ForeColor = SystemColors.WindowText;
                 ResourceFilesStrListView.Font = new Font("Segoe UI", 12,
-                    FontStyle.Regular, GraphicsUnit.World, ((byte)(0)));
+                    FontStyle.Regular, GraphicsUnit.World, 0);
             }
 
             var count = ResourceFilesStrListView.Items.Count + 1;
 
-            if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (op.ShowDialog() == DialogResult.OK)
             {
                 foreach (var filename in op.FileNames)
                 {
                     string[] row = { count.ToString(), filename };
                     var item = new ListViewItem(row);
 
-                    bool exist = false;
+                    var exist = false;
                     foreach (ListViewItem it in ResourceFilesStrListView.Items)
                     {
                         if (it.SubItems[1].Text.Contains(filename))
@@ -96,10 +110,10 @@ namespace FontValidator
                     if (!exist)
                         ResourceFilesStrListView.Items.Add(item);
                     else
-                        MessageBox.Show("Item already added.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(@"Item already added.", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                m_report_generated = false;
+                _mReportGenerated = false;
             }
         }
 
@@ -118,75 +132,75 @@ namespace FontValidator
 
             if (e.KeyData == Keys.Delete)
             {
-                for (int i = list.SelectedItems.Count - 1; i >= 0; i--)
+                for (var i = list.SelectedItems.Count - 1; i >= 0; i--)
                     list.SelectedItems[i].Remove();
             }
 
             if (e.KeyCode == Keys.A && e.Control)
             {
-                for (int i = 0; i < list.Items.Count; ++i)
+                for (var i = 0; i < list.Items.Count; ++i)
                     list.Items[i].Selected = true;
             }
         }
 
         private void ResourceFilesBrowseNum_Click(object sender, EventArgs e)
         {
-            OpenFileDialog op = new OpenFileDialog();
+            var op = new OpenFileDialog();
             op.Multiselect = false;
             op.Filter = "Resource file|Num.rc";
 
             if (!ResourceFileNumTextBox.Enabled)
                 ResourceFileNumTextBox.Enabled = true;
 
-            if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (op.ShowDialog() == DialogResult.OK)
             {
-                m_report_param.m_num_file = op.FileName;
-                m_report_generated = false;
+                _mReportParam.m_num_file = op.FileName;
+                _mReportGenerated = false;
             }
 
-            ResourceFileNumTextBox.Text = m_report_param.m_num_file;
+            ResourceFileNumTextBox.Text = _mReportParam.m_num_file;
         }
 
         private void FontFileBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog op = new OpenFileDialog();
+            var op = new OpenFileDialog();
             op.Multiselect = false;
             op.Filter = "Font file|*.ttf";
 
             if (!FontFileTextBox.Enabled)
                 FontFileTextBox.Enabled = true;
 
-            if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (op.ShowDialog() == DialogResult.OK)
             {
-                m_report_param.m_ttf_file = op.FileName;
-                m_report_generated = false;
+                _mReportParam.m_ttf_file = op.FileName;
+                _mReportGenerated = false;
             }
 
 
-            FontFileTextBox.Text = m_report_param.m_ttf_file;
+            FontFileTextBox.Text = _mReportParam.m_ttf_file;
         }
 
         private void DRMFileBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog op = new OpenFileDialog();
+            var op = new OpenFileDialog();
             op.Multiselect = false;
             op.Filter = "Drm file|*drm.h";
 
             if (!DRMFileTextBox.Enabled)
                 DRMFileTextBox.Enabled = true;
 
-            if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (op.ShowDialog() == DialogResult.OK)
             {
-                m_report_param.m_drm_file = op.FileName;
-                m_report_generated = false;
+                _mReportParam.m_drm_file = op.FileName;
+                _mReportGenerated = false;
             }
 
-            DRMFileTextBox.Text = m_report_param.m_drm_file;
+            DRMFileTextBox.Text = _mReportParam.m_drm_file;
         }
 
         private void CPPFilesAdd_Click(object sender, EventArgs e)
         {
-            OpenFileDialog op = new OpenFileDialog();
+            var op = new OpenFileDialog();
             op.Multiselect = true;
             op.Filter = "CPP files|*.cpp";
 
@@ -196,19 +210,19 @@ namespace FontValidator
                 CPPFilesListView.Items.Clear();
                 CPPFilesListView.ForeColor = SystemColors.WindowText;
                 CPPFilesListView.Font = new Font("Segoe UI", 12,
-                    FontStyle.Regular, GraphicsUnit.World, ((byte)(0)));
+                    FontStyle.Regular, GraphicsUnit.World, 0);
             }
 
             var count = CPPFilesListView.Items.Count + 1;
 
-            if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (op.ShowDialog() == DialogResult.OK)
             {
                 foreach (var filename in op.FileNames)
                 {
-                    FileInfo f = new FileInfo(filename);
-                    string[] row = { count.ToString(), filename, (f.Length / 1024).ToString() + " KB" };
+                    var f = new FileInfo(filename);
+                    string[] row = { count.ToString(), filename, f.Length / 1024 + " KB" };
 
-                    bool exist = false;
+                    var exist = false;
                     foreach (ListViewItem it in CPPFilesListView.Items)
                     {
                         if (it.SubItems[1].Text.Contains(filename))
@@ -227,7 +241,7 @@ namespace FontValidator
                         MessageBox.Show("Item already added.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                m_report_generated = false;
+                _mReportGenerated = false;
             }
         }
 
@@ -237,65 +251,30 @@ namespace FontValidator
 
             if (!chxbox.Name.Contains("tab_"))
             {
-                m_checkboxes.m_layout_checkboxes[chxbox.Tag.ToString()] = chxbox.Checked;
+                _mCheckboxes.m_layout_checkboxes[chxbox.Tag.ToString()] = chxbox.Checked;
             }
             else
             {
-                if (m_checkboxes.m_tab_checkboxes.ContainsKey(m_checkboxes.current_selected_tab_name))
+                if (_mCheckboxes.m_tab_checkboxes.ContainsKey(_mCheckboxes.current_selected_tab_name))
                 {
-                    var checkboxes = m_checkboxes.m_tab_checkboxes[m_checkboxes.current_selected_tab_name];
+                    var checkboxes = _mCheckboxes.m_tab_checkboxes[_mCheckboxes.current_selected_tab_name];
                     checkboxes.m_tab_checkbox[chxbox.Tag.ToString()] = chxbox.Checked;
                 }
             }
         }
 
-        private void wizardPage1_Commit(object sender, AeroWizard.WizardPageConfirmEventArgs e)
-        {
-            var count = ResourceFilesStrListView.Items.Count;
-
-            Item2IncludeTabs.Enabled = count > 0 ? true : false;
-
-            // clean up added tabs
-            for (int i = Item2IncludeTabs.TabCount - 1; i >= 1; i--)
-                Item2IncludeTabs.TabPages.RemoveAt(i);
-
-            m_report_param.m_str_files.Clear();
-            var str_files_names = new List<string>();
-
-            for (int i = 0; i < ResourceFilesStrListView.Items.Count; ++i)
-            {
-                string title = ResourceFilesStrListView.Items[i].Text;
-                if (i == 0)
-                    Item2IncludeTabs.TabPages[0].Text = title;
-                else if (i > 0) // create tab if more than 1
-                {
-                    var myTabPage = new TabPage(title);
-                    myTabPage.BackColor = System.Drawing.Color.White;
-                    Item2IncludeTabs.TabPages.Add(myTabPage);
-                }
-
-                m_report_param.m_str_files.Add(title,
-                    ResourceFilesStrListView.Items[i].SubItems[1].Text);
-
-                str_files_names.Add(title);
-            }
-
-            m_checkboxes = new Checkboxes(str_files_names);
-            m_checkboxes.current_selected_tab_name = Item2IncludeTabs.TabPages[0].Text;
-        }
-
         private void Item2IncludeTabs_Selected(object sender, TabControlEventArgs e)
         {
-            if (m_tab_children_controls.Cast<Control>().Count() < 1)
+            if (!_mTabChildrenControls.Any())
                 return;
 
-            for (int i = m_tab_children_controls.Count<Control>() - 1; i >= 0; i--)
-                m_tab_children_controls.ElementAt(i).Parent = e.TabPage;
+            for (var i = _mTabChildrenControls.Count() - 1; i >= 0; i--)
+                _mTabChildrenControls.ElementAt(i).Parent = e.TabPage;
 
-            m_checkboxes.current_selected_tab_name = e.TabPage.Text;
+            _mCheckboxes.current_selected_tab_name = e.TabPage.Text;
 
             // reset checkbox depend on param
-            foreach (var control in m_checkbox_controls)
+            foreach (var control in _mCheckboxControls)
             {
                 var button = (CheckBox)control;
 
@@ -311,117 +290,56 @@ namespace FontValidator
                     //    }
                     //}
 
-                    if (m_checkboxes.m_tab_checkboxes.ContainsKey(m_checkboxes.current_selected_tab_name))
+                    if (_mCheckboxes.m_tab_checkboxes.ContainsKey(_mCheckboxes.current_selected_tab_name))
                     {
-                        var checkboxes = m_checkboxes.m_tab_checkboxes[m_checkboxes.current_selected_tab_name];
+                        var checkboxes = _mCheckboxes.m_tab_checkboxes[_mCheckboxes.current_selected_tab_name];
                         button.Checked = checkboxes.m_tab_checkbox[button.Tag.ToString()];
                     }
                 }
                 else
-                    button.Checked = m_checkboxes.m_layout_checkboxes[button.Tag.ToString()];
+                    button.Checked = _mCheckboxes.m_layout_checkboxes[button.Tag.ToString()];
             }
         }
 
         private void Item2IncludeTabs_Deselected(object sender, TabControlEventArgs e)
         {
-            m_tab_children_controls = e.TabPage.Controls.OfType<Control>();
-        }
-
-        public IEnumerable<Control> GetAll(Control control, Type type)
-        {
-            var controls = control.Controls.Cast<Control>();
-
-            return controls.SelectMany(ctrl => GetAll(ctrl, type))
-                                      .Concat(controls)
-                                      .Where(c => c.GetType() == type);
-        }
-
-        private void wizardPage2_Commit(object sender, AeroWizard.WizardPageConfirmEventArgs e)
-        {
-            m_report_param.m_cpp_files.Clear();
-
-            for (int i = 0; i < CPPFilesListView.Items.Count; ++i)
-            {
-                string title = CPPFilesListView.Items[i].Text;
-                m_report_param.m_cpp_files.Add(title,
-                    CPPFilesListView.Items[i].SubItems[1].Text);
-            }
-        }
-
-        private void wizardPage3_Enter(object sender, EventArgs e)
-        {
-            if (m_report_generated)
-                return;
-
-            // clear old stuff
-            {
-                m_checkboxes.m_layout_checkboxes.Clear();
-                var tab_checkbox = m_checkboxes.m_tab_checkboxes;
-                foreach (var tab in tab_checkbox)
-                    tab.Value.m_tab_checkbox.Clear();
-            }
-
-            var df = (AeroWizard.WizardPage)sender;
-
-            var all_checkbox = GetAll(df, typeof(CheckBox));
-            m_checkbox_controls = all_checkbox;
-
-            foreach (var chxbx in all_checkbox)
-            {
-                var item = (CheckBox)chxbx;
-                var chkbx_name = item.Name;
-                var chxbx_tag = item.Tag.ToString();
-                var chxbx_state = item.Checked;
-
-                if (chkbx_name.Contains("tab_"))
-                {
-                    var tab_checkbox = m_checkboxes.m_tab_checkboxes;
-                    foreach (var tab in tab_checkbox)
-                    {
-                        tab.Value.m_tab_checkbox.Add(chxbx_tag, chxbx_state);
-                    }
-                }
-                else
-                    m_checkboxes.m_layout_checkboxes.Add(chxbx_tag, chxbx_state);
-            }
-
-            Item2IncludePresetComboBox.SelectedIndex = 0;
+            _mTabChildrenControls = e.TabPage.Controls.OfType<Control>();
         }
 
         private void populate_report(ProgressForm pForm, bool hide_width_test = false, bool hide_height_test = false)
         {
-            int tab = 0;
+            var tab = 0;
 
-            var totalCount = m_checkboxes.m_tab_checkboxes.Count * m_result_datas.Count;
+            var totalCount = _mCheckboxes.m_tab_checkboxes.Count * _mResultDatas.Count;
             var progressCount = 0;
             var currentProgressBar = pForm.ProgressBar.Value;
 
-            foreach (var i in m_checkboxes.m_tab_checkboxes)
+            foreach (var i in _mCheckboxes.m_tab_checkboxes)
             {
-                int count = 1;
+                var count = 1;
 
                 var tabpage = reporttab.TabPages[tab];
-                var listviews = GetAll(tabpage, typeof(ListView));
+                var listviews = tabpage.GetAll(typeof(ListView));
                 var listview = (ListView)listviews.ElementAt(0);
 
-                listview.InvokeIfRequired(new Action(() =>
+                listview.InvokeIfRequired(() =>
                 {
                     listview.Items.Clear();
                     listview.BeginUpdate();
-                }));
+                });
 
 
-                foreach (var j in m_result_datas)
+                foreach (var j in _mResultDatas)
                 {
                     progressCount++;
-                    if (j.Equals(id_drm))
+                    if (j.Equals(_idDrm))
                         continue;
 
                     var item = new ListViewItem(count.ToString());
                     item.UseItemStyleForSubItems = false;
 
-                    var need_add_item = true;
-                    bool need_recolor = false;
+                    var needAddItem = true;
+                    var needRecolor = false;
 
                     if (j.text_values.Count < 1)
                         continue;
@@ -452,7 +370,7 @@ namespace FontValidator
                             if ((hide_height_test && k.is_ok_height) ||
                                 (hide_width_test && k.is_ok_width))
                             {
-                                need_add_item = false;
+                                needAddItem = false;
                                 break;
                             }
 
@@ -461,7 +379,7 @@ namespace FontValidator
                             {
                                 if (k.is_ok_height || k.is_ok_width)
                                 {
-                                    need_add_item = false;
+                                    needAddItem = false;
                                     break;
                                 }
                             }
@@ -469,7 +387,7 @@ namespace FontValidator
                             {
                                 if (k.is_ok_width)
                                 {
-                                    need_add_item = false;
+                                    needAddItem = false;
                                     break;
                                 }
                             }
@@ -477,14 +395,14 @@ namespace FontValidator
                             {
                                 if (k.is_ok_height)
                                 {
-                                    need_add_item = false;
+                                    needAddItem = false;
                                     break;
                                 }
                             }
 
                             if (k.value_string.Equals(""))
                             {
-                                need_add_item = false;
+                                needAddItem = false;
                                 break;
                             }
 
@@ -500,27 +418,24 @@ namespace FontValidator
                             var sub_height = item.SubItems.Add(k.is_ok_height ? "OK" : "NOT OK");
                             sub_height.BackColor = k.is_ok_height ? sub_height.BackColor : Color.Red;
 
-                            need_recolor = (!k.is_ok_height || !k.is_ok_width);
+                            needRecolor = !k.is_ok_height || !k.is_ok_width;
                             break;
                         }
                     }
 
-                    if (need_recolor)
+                    if (needRecolor)
                     {
                         foreach (var k in item.SubItems)
                         {
                             var m = (ListViewItem.ListViewSubItem)k;
-                            if ((m.BackColor != Color.Red))
+                            if (m.BackColor != Color.Red)
                                 m.BackColor = Color.MistyRose;
                         }
                     }
 
-                    if (need_add_item)
+                    if (needAddItem)
                     {
-                        listview.InvokeIfRequired(new Action(() =>
-                        {
-                            listview.Items.Add(item);
-                        }));
+                        listview.InvokeIfRequired(() => { listview.Items.Add(item); });
 
                         ++count;
                     }
@@ -537,14 +452,9 @@ namespace FontValidator
                         var percent = (double)progressCount / totalCount * 100;
                         pForm.SetProgress((int)percent);
                     }
-
-
                 }
 
-                listview.InvokeIfRequired(new Action(() =>
-                {
-                    listview.EndUpdate();
-                }));
+                listview.InvokeIfRequired(() => { listview.EndUpdate(); });
 
                 ++tab;
             }
@@ -552,18 +462,18 @@ namespace FontValidator
 
         private void populate_report_drm(ProgressForm pForm)
         {
-            var listview = drmForm.DRMListView;
-            listview.InvokeIfRequired(new Action(() =>
+            var listview = _drmForm.DRMListView;
+            listview.InvokeIfRequired(() =>
             {
                 listview.Items.Clear();
                 listview.BeginUpdate();
-            }));
+            });
 
-            int total = m_result_drm_data.Count;
-            int count = 1;
+            var total = _mResultDrmData.Count;
+            var count = 1;
             var currentProgressBar = pForm.ProgressBar.Value;
 
-            foreach (var i in m_result_drm_data)
+            foreach (var i in _mResultDrmData)
             {
                 var item = new ListViewItem(count.ToString());
                 item.UseItemStyleForSubItems = false;
@@ -578,16 +488,12 @@ namespace FontValidator
                     foreach (var k in item.SubItems)
                     {
                         var m = (ListViewItem.ListViewSubItem)k;
-                        if ((m.BackColor != Color.Red))
+                        if (m.BackColor != Color.Red)
                             m.BackColor = Color.MistyRose;
                     }
-
                 }
 
-                listview.InvokeIfRequired(new Action(() =>
-                {
-                    listview.Items.Add(item);
-                }));
+                listview.InvokeIfRequired(() => { listview.Items.Add(item); });
 
                 count++;
 
@@ -597,38 +503,36 @@ namespace FontValidator
                     pForm.SetProgress((int)percent);
                 }
             }
-            listview.InvokeIfRequired(new Action(() =>
-            {
-                listview.EndUpdate();
-            }));
+            listview.InvokeIfRequired(() => { listview.EndUpdate(); });
 
-            drmForm.InvokeIfRequired(new Action(() =>
+            _drmForm.InvokeIfRequired(() =>
             {
-                drmForm.DRMSummary.Text = "TextBox ID: " + id_drm.textbox_id +
-                          "; Width: " + id_drm.width.Value + "; Fontsize: " + 18;
-            }));
+                _drmForm.DRMSummary.Text = "TextBox ID: " + _idDrm.textbox_id +
+                                          "; Width: " + _idDrm.width.Value + "; Fontsize: " + 18;
+            });
         }
 
         private void show_relevant_columns()
         {
             Action action = () =>
             {
-                foreach (var tabpage in reporttab.TabPages)
+                foreach (var tab in reporttab.TabPages)
                 {
-                    var listviews = GetAll((TabPage)tabpage, typeof(ListView));
+                    var tabpage = tab as TabPage;
+                    var listviews = tabpage.GetAll(typeof(ListView));
                     var listview = (ListView)listviews.ElementAt(0);
 
                     var rgx = new Regex(@"[\d]+?_");
 
-                    for (int i = 1; i < listview.Columns.Count; ++i)
+                    for (var i = 1; i < listview.Columns.Count; ++i)
                     {
                         var column = listview.Columns[i];
                         column.AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
 
                         // search throu dictionary. because key is no longer the same so need extra step   
-                        bool is_in_layout = false;
+                        var is_in_layout = false;
 
-                        foreach (var j in m_checkboxes.m_layout_checkboxes)
+                        foreach (var j in _mCheckboxes.m_layout_checkboxes)
                         {
                             var key = j.Key;
                             var key_wo_prefix = rgx.Replace(key, string.Empty);
@@ -645,14 +549,14 @@ namespace FontValidator
                         if (is_in_layout) // skip unnecessary loop
                             continue;
 
-                        var m = m_checkboxes.m_tab_checkboxes[((TabPage)tabpage).Text];
+                        var m = _mCheckboxes.m_tab_checkboxes[tabpage.Text];
 
                         foreach (var k in m.m_tab_checkbox)
                         {
                             var key = k.Key;
-                            var key_wo_prefix = rgx.Replace(key, string.Empty);
+                            var keyWoPrefix = rgx.Replace(key, string.Empty);
 
-                            if (key_wo_prefix.Equals(column.Text))
+                            if (keyWoPrefix.Equals(column.Text))
                             {
                                 if (!k.Value)
                                     column.Width = 0;
@@ -660,7 +564,6 @@ namespace FontValidator
                                 break;
                             }
                         }
-
                     }
                 }
             };
@@ -670,10 +573,10 @@ namespace FontValidator
 
         private void add_header()
         {
-            var sort_layout_key = m_checkboxes.m_layout_checkboxes.Keys.ToList();
+            var sort_layout_key = _mCheckboxes.m_layout_checkboxes.Keys.ToList();
             sort_layout_key.Sort();
 
-            var sort_tab_key = m_checkboxes.m_tab_checkboxes.Values.ToList()[0].m_tab_checkbox.Keys.ToList();
+            var sort_tab_key = _mCheckboxes.m_tab_checkboxes.Values.ToList()[0].m_tab_checkbox.Keys.ToList();
             sort_tab_key.Sort();
 
             var sort_all_key = new List<string>();
@@ -688,36 +591,35 @@ namespace FontValidator
             var sort_all_key_wo_prefix = sort_all_key.Select(x => x = rgx.Replace(x, string.Empty)).ToList();
 
             // create column header LOL      
-            int tab = 0;
-            foreach (var j in m_checkboxes.m_tab_checkboxes)
+            var tab = 0;
+            foreach (var j in _mCheckboxes.m_tab_checkboxes)
             {
                 Action action = () =>
                 {
                     var tabpage = reporttab.TabPages[tab];
-                    var listviews = GetAll(tabpage, typeof(ListView));
+                    var listviews = tabpage.GetAll(typeof(ListView));
                     var listview = (ListView)listviews.ElementAt(0);
 
                     // clear all header
                     listview.Columns.Clear();
 
                     {
-                        int k = listview.Columns.Add(new ColumnHeader());
+                        var k = listview.Columns.Add(new ColumnHeader());
                         listview.Columns[k].Text = "#";
                     }
 
-                    for (int i = 0; i < sort_layout_key_wo_prefix.Count; ++i)
+                    for (var i = 0; i < sort_layout_key_wo_prefix.Count; ++i)
                     {
-                        int k = listview.Columns.Add(new ColumnHeader());
+                        var k = listview.Columns.Add(new ColumnHeader());
                         listview.Columns[k].Text = sort_layout_key_wo_prefix.ElementAt(i);
                     }
 
 
-                    for (int i = 0; i < sort_tab_key_wo_prefix.Count; ++i)
+                    for (var i = 0; i < sort_tab_key_wo_prefix.Count; ++i)
                     {
-                        int k = listview.Columns.Add(new ColumnHeader());
+                        var k = listview.Columns.Add(new ColumnHeader());
                         listview.Columns[k].Text = sort_tab_key_wo_prefix.ElementAt(i);
                     }
-
                 };
 
                 reporttab.Invoke(action);
@@ -730,17 +632,17 @@ namespace FontValidator
             if (!_getTolerance())
                 return;
 
-            var report_maker = new ReportMaker(m_report_param);
+            _reportMaker = new ReportMaker(_mReportParam);
 
-            ProgressForm form = new ProgressForm();
+            var form = new ProgressForm();
             form.Text = "Generating report...";
-            form.DoWork += new ProgressForm.DoWorkEventHandler(form_DoWork);
-            form.Argument = report_maker;
+            form.DoWork += form_DoWork;
+            form.Argument = _reportMaker;
 
             //if(m_report_param.m_cpp_files.Count < 40)
             //form.SetReportProgress(false);
 
-            DialogResult result = form.ShowDialog();
+            var result = form.ShowDialog();
             form.ProgressBar.MarqueeAnimationSpeed = 1;
             form.ProgressBar.Style = ProgressBarStyle.Marquee;
 
@@ -759,8 +661,8 @@ namespace FontValidator
                 //m_result_drm_data = results.Value;
             }
 
-            m_report_generated = true;
-            viewDRMReport.Enabled = (m_result_drm_data.Count > 0);
+            _mReportGenerated = true;
+            viewDRMReport.Enabled = _mResultDrmData.Count > 0;
         }
 
         public void ListView_ColumnClick(object sender, ColumnClickEventArgs e)
@@ -769,25 +671,25 @@ namespace FontValidator
 
             var list = (ListView)sender;
             //ReportListView_1.Sort();
-            list.ListViewItemSorter = lvwColumnSorter;
+            list.ListViewItemSorter = _lvwColumnSorter;
 
-            if (e.Column == lvwColumnSorter.SortColumn)
+            if (e.Column == _lvwColumnSorter.SortColumn)
             {
                 // Reverse the current sort direction for this column.
-                if (lvwColumnSorter.Order == SortOrder.Ascending)
+                if (_lvwColumnSorter.Order == SortOrder.Ascending)
                 {
-                    lvwColumnSorter.Order = SortOrder.Descending;
+                    _lvwColumnSorter.Order = SortOrder.Descending;
                 }
                 else
                 {
-                    lvwColumnSorter.Order = SortOrder.Ascending;
+                    _lvwColumnSorter.Order = SortOrder.Ascending;
                 }
             }
             else
             {
                 // Set the column number that is to be sorted; default to ascending.
-                lvwColumnSorter.SortColumn = e.Column;
-                lvwColumnSorter.Order = SortOrder.Ascending;
+                _lvwColumnSorter.SortColumn = e.Column;
+                _lvwColumnSorter.Order = SortOrder.Ascending;
             }
 
             // Perform the sort with these new sort options.
@@ -797,64 +699,66 @@ namespace FontValidator
 
         private void _createReportTabs()
         {
-            if (m_report_generated)
+            if (_mReportGenerated)
                 return;
 
-            var count = m_checkboxes.m_tab_checkboxes.Count;
+            var count = _mCheckboxes.m_tab_checkboxes.Count;
 
             // clean up added tabs
-            for (int i = reporttab.TabCount - 1; i >= 1; i--)
+            for (var i = reporttab.TabCount - 1; i >= 1; i--)
                 reporttab.TabPages.RemoveAt(i);
 
             var str_files_names = new List<string>();
-            for (int i = 0; i < m_checkboxes.m_tab_checkboxes.Count; ++i)
+            for (var i = 0; i < _mCheckboxes.m_tab_checkboxes.Count; ++i)
             {
-                string title = m_checkboxes.m_tab_checkboxes.Keys.ToList()[i];
+                var title = _mCheckboxes.m_tab_checkboxes.Keys.ToList()[i];
                 //string title = m_result_datas[0].text_values.ElementAt(i).label;
                 if (i == 0)
+                {
                     reporttab.TabPages[0].Text = title;
+
+                    var tabpage = reporttab.TabPages[0];
+                    tabpage.Text = title;
+                    var listviews = tabpage.GetAll(typeof(ListView));
+                    var listview = (ListView)listviews.ElementAt(0);
+
+                    EnableEditTextFunctionality(listview);
+                }
                 else if (i > 0) // create tab if more than 1
                 {
                     var myTabPage = new TabPage(title);
-                    myTabPage.Location = new System.Drawing.Point(4, 24);
+                    myTabPage.Location = new Point(4, 24);
                     myTabPage.Padding = new Padding(3);
-                    myTabPage.Size = new System.Drawing.Size(489, 246);
+                    myTabPage.Size = new Size(489, 246);
                     myTabPage.UseVisualStyleBackColor = true;
 
                     var myListView = new ListView();
-                    myListView.ContextMenuStrip = this.contextMenuStrip1;
-                    myListView.Dock = System.Windows.Forms.DockStyle.Fill;
+
+                    EnableEditTextFunctionality(myListView);
+
+                    myListView.ContextMenuStrip = contextMenuStrip1;
+                    myListView.Dock = DockStyle.Fill;
                     myListView.FullRowSelect = true;
-                    myListView.Location = new System.Drawing.Point(3, 3);
-                    myListView.Text = "ReportListView_" + (i + 1).ToString();
+                    myListView.Location = new Point(3, 3);
+                    myListView.Text = "ReportListView_" + (i + 1);
                     myListView.Margin = new Padding(3, 3, 3, 3);
                     myListView.ShowGroups = false;
                     myListView.ShowItemToolTips = true;
-                    myListView.Size = new System.Drawing.Size(483, 240);
-                    myListView.Sorting = System.Windows.Forms.SortOrder.Ascending;
+                    myListView.Size = new Size(483, 240);
+                    myListView.Sorting = SortOrder.Ascending;
                     myListView.UseCompatibleStateImageBehavior = false;
-                    myListView.View = System.Windows.Forms.View.Details;
-                    myListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.ListView_ColumnClick);
-                    myListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ListView_KeyDown);
-                    myListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ListView_MouseClick);
+                    myListView.View = View.Details;
+                    myListView.ColumnClick += ListView_ColumnClick;
+                    myListView.KeyDown += ListView_KeyDown;
+                    myListView.MouseClick += ListView_MouseClick;
 
                     myTabPage.Controls.Add(myListView);
-                    myTabPage.BackColor = System.Drawing.Color.White;
+                    myTabPage.BackColor = Color.White;
                     reporttab.TabPages.Add(myTabPage);
                 }
             }
 
-            m_selected_tab_report = reporttab.TabPages[0].Text;
-        }
-
-        private void wizardPage3_Commit(object sender, AeroWizard.WizardPageConfirmEventArgs e)
-        {
-            _createReportTabs();
-        }
-
-        private void wizardPage4_Enter(object sender, EventArgs e)
-        {
-
+            _mSelectedTabReport = reporttab.TabPages[0].Text;
         }
 
         private bool _getTolerance()
@@ -865,14 +769,14 @@ namespace FontValidator
                 height < 0 || height > 100 || width < 0 || width > 100)
             {
                 MessageBox.Show("Not a valid input." + Environment.NewLine +
-                    "Please use an integer within 0-100 for input", "Error!",
+                                "Please use an integer within 0-100 for input", "Error!",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
                 return false;
             }
 
-            m_report_param.m_tolerance_height = height / 100;
-            m_report_param.m_tolerance_width = width / 100;
+            _mReportParam.m_tolerance_height = height / 100;
+            _mReportParam.m_tolerance_width = width / 100;
 
             return true;
         }
@@ -882,13 +786,13 @@ namespace FontValidator
             if (!_getTolerance())
                 return;
 
-            foreach (var i in m_result_datas)
+            foreach (var i in _mResultDatas)
             {
                 foreach (var j in i.text_values)
                 {
-                    j.calc_w_tolerance_width = j.calc_base_width * (1 + m_report_param.m_tolerance_width / 100);
+                    j.calc_w_tolerance_width = j.calc_base_width * (1 + _mReportParam.m_tolerance_width / 100);
                     // tolerance_height
-                    j.calc_w_tolerance_height = j.calc_base_height * (1 + m_report_param.m_tolerance_height / 100);
+                    j.calc_w_tolerance_height = j.calc_base_height * (1 + _mReportParam.m_tolerance_height / 100);
                     // tolerance
 
                     if (i.multiline == "TRUE")
@@ -902,53 +806,50 @@ namespace FontValidator
                             /*- 2 * Convert.ToDouble(i.padding.Value)*/;
                         //j.is_ok_width = j.calc_w_tolerance_width < total_width;
 
-                        j.is_ok_width = (j.calc_base_width < total_width);
+                        j.is_ok_width = j.calc_base_width < total_width;
 
                         if (!j.is_ok_width)
-                            j.is_ok_width = (Math.Abs(j.calc_base_width - total_width) <
-                                             (j.calc_base_width * m_report_param.m_tolerance_width));
+                            j.is_ok_width = Math.Abs(j.calc_base_width - total_width) <
+                                            j.calc_base_width * _mReportParam.m_tolerance_width;
                     }
 
                     var total_height = Convert.ToDouble(i.height.Value) /*- 2 * Convert.ToDouble(i.padding.Value)*/;
                     //j.is_ok_height = (j.calc_w_tolerance_height * j.calc_row_count) < total_height;
 
-                    j.is_ok_height = (j.calc_base_height < total_height);
+                    j.is_ok_height = j.calc_base_height < total_height;
 
                     if (!j.is_ok_height)
-                        j.is_ok_height = (Math.Abs(j.calc_base_height - total_height) <
-                                          (j.calc_base_height * m_report_param.m_tolerance_height));
+                        j.is_ok_height = Math.Abs(j.calc_base_height - total_height) <
+                                         j.calc_base_height * _mReportParam.m_tolerance_height;
                 }
             }
 
             add_header();
 
 
-            ProgressForm formx = new ProgressForm();
+            var formx = new ProgressForm();
             formx.Text = "Updating tolerance..";
 
-            formx.DoWork += (sender1, args) =>
-            {
-                populate_report(sender1);
-            };
+            formx.DoWork += (sender1, args) => { populate_report(sender1); };
 
             formx.ShowDialog();
             show_relevant_columns();
-            m_report_generated = true;
+            _mReportGenerated = true;
         }
 
         public void update_tolerance_drm(double tolerance)
         {
-            ProgressForm formx = new ProgressForm();
+            var formx = new ProgressForm();
             formx.Text = "Updating tolerance..";
 
             formx.DoWork += (sender, args) =>
             {
-                foreach (var i in m_result_drm_data)
+                foreach (var i in _mResultDrmData)
                 {
-                    i.widthTest = (i.widthValue < i.layoutwidthtotal);
+                    i.widthTest = i.widthValue < i.layoutwidthtotal;
 
                     if (!i.widthTest)
-                        i.widthTest = (Math.Abs(i.widthValue - i.layoutwidthtotal) < (i.widthValue * tolerance / 100));
+                        i.widthTest = Math.Abs(i.widthValue - i.layoutwidthtotal) < i.widthValue * tolerance / 100;
                 }
 
                 populate_report_drm(sender);
@@ -959,24 +860,21 @@ namespace FontValidator
 
         private void show_fail_combobox_SelectedIndexChanged(object sender, EventArgs e)
         {
-
-            searchItem.currentSearchIndexListViewItem = 0;
-            searchItem.currentSearchIndexListViewSubItem = 0;
-            searchItem.currentSearchString = String.Empty;
-            searchItem.previousFoundSubItem = new ListViewItem.ListViewSubItem();
-            searchItem.previousFoundSubItemColor = default(Color);
+            _searchItem.currentSearchIndexListViewItem = 0;
+            _searchItem.currentSearchIndexListViewSubItem = 0;
+            _searchItem.currentSearchString = string.Empty;
+            _searchItem.previousFoundSubItem = new ListViewItem.ListViewSubItem();
+            _searchItem.previousFoundSubItemColor = default(Color);
             searchTextBox.Text = "";
 
-            ProgressForm formx = new ProgressForm();
+            var formx = new ProgressForm();
             formx.Text = "Updating selection..";
 
             formx.DoWork += (sender1, args) =>
             {
                 var selectedItem = "";
-                show_fail_combobox.InvokeIfRequired(() =>
-                {
-                    selectedItem = show_fail_combobox.SelectedItem?.ToString();
-                });
+                show_fail_combobox.InvokeIfRequired(
+                    () => { selectedItem = show_fail_combobox.SelectedItem?.ToString(); });
 
                 if (selectedItem == "All")
                     populate_report(formx);
@@ -996,20 +894,20 @@ namespace FontValidator
             if ((e.Button & MouseButtons.Right) != 0)
             {
                 var list = (ListView)sender;
-                ListViewHitTestInfo info = list.HitTest(e.X, e.Y);
-                m_selected_string = info.SubItem.Text;
+                var info = list.HitTest(e.X, e.Y);
+                _mSelectedString = info.SubItem.Text;
 
-                valid_contextmenu_location = true;
+                _validContextmenuLocation = true;
             }
         }
 
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_selected_string != "")
+            if (_mSelectedString != "")
             {
                 try
                 {
-                    Clipboard.SetText(m_selected_string);
+                    Clipboard.SetText(_mSelectedString);
                 }
                 catch (Exception exp)
                 {
@@ -1017,54 +915,42 @@ namespace FontValidator
                     //throw;
                 }
             }
-
         }
 
-        private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
         {
-            if (!valid_contextmenu_location)
+            if (!_validContextmenuLocation)
                 e.Cancel = true;
 
-            valid_contextmenu_location = false;
-        }
-
-        private void UIWizard_Load(object sender, EventArgs e)
-        {
-            var title = new Font("Segoe UI", 12F,
-                FontStyle.Regular, GraphicsUnit.World, ((byte)(0)));
-            var header = new Font("Segoe UI", 30,
-                FontStyle.Bold, GraphicsUnit.World, ((byte)(0)));
-            var button = new Font("Segoe UI", 12F,
-                FontStyle.Regular, GraphicsUnit.World, ((byte)(0)));
-
-            wizardControl.OverrideThemeFonts(title, header, button);
-
-            drmForm = new DRMForm(this);
-            drmForm.DRMListView.ColumnClick +=
-                new System.Windows.Forms.ColumnClickEventHandler(this.ListView_ColumnClick);
+            _validContextmenuLocation = false;
         }
 
         private void Item2IncludePresetComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItem = Item2IncludePresetComboBox.SelectedItem.ToString();
 
-            List<string> listOfButtons = new List<string>();
+            var listOfButtons = new List<string>();
 
             if (selectedItem == "Basic")
             {
-                listOfButtons = new List<string>{"00_Filepath",
-                    "01_Width ID", "17_Width Test", "18_Height Test",
-                    "11_String" };
+                listOfButtons = new List<string>
+                {
+                    "00_Filepath",
+                    "01_Width ID",
+                    "17_Width Test",
+                    "18_Height Test",
+                    "11_String"
+                };
             }
             else if (selectedItem == "Detailed")
             {
-                var layout_key = m_checkboxes.m_layout_checkboxes.Keys.ToList();
-                var tab_key = m_checkboxes.m_tab_checkboxes.Values.ToList()[0].m_tab_checkbox.Keys.ToList();
+                var layout_key = _mCheckboxes.m_layout_checkboxes.Keys.ToList();
+                var tab_key = _mCheckboxes.m_tab_checkboxes.Values.ToList()[0].m_tab_checkbox.Keys.ToList();
                 listOfButtons.AddRange(layout_key);
                 listOfButtons.AddRange(tab_key);
             }
 
-            foreach (var control in m_checkbox_controls)
+            foreach (var control in _mCheckboxControls)
             {
                 var button = (CheckBox)control;
                 var tagname = button.Tag.ToString();
@@ -1075,14 +961,13 @@ namespace FontValidator
                     if (tagname.Equals(i))
                     {
                         button.Checked = true;
-                        foreach (var j in m_checkboxes.m_tab_checkboxes)
+                        foreach (var j in _mCheckboxes.m_tab_checkboxes)
                         {
                             if (j.Value.m_tab_checkbox.ContainsKey(tagname))
                             {
                                 //hack: remove tolerance columm
                                 j.Value.m_tab_checkbox[tagname] = !tagname.Contains("(+tol)");
                             }
-
                         }
                     }
                 }
@@ -1091,14 +976,14 @@ namespace FontValidator
 
         private void saveAs_Click(object sender, EventArgs e)
         {
-            if (!m_report_generated)
+            if (!_mReportGenerated)
             {
                 MessageBox.Show("Please generate report first");
                 return;
             }
 
 
-            Excel.Application xlApp = new Excel.Application();
+            var xlApp = new Application();
 
             if (xlApp == null)
             {
@@ -1106,13 +991,13 @@ namespace FontValidator
                 return;
             }
 
-            Excel.Workbook xlWorkBook;
+            Workbook xlWorkBook;
 
-            object misValue = System.Reflection.Missing.Value;
+            object misValue = Missing.Value;
 
             try
             {
-                xlWorkBook = xlApp.Workbooks.Add(Excel.XlWBATemplate.xlWBATWorksheet);
+                xlWorkBook = xlApp.Workbooks.Add(XlWBATemplate.xlWBATWorksheet);
             }
             catch (Exception exp)
             {
@@ -1121,14 +1006,15 @@ namespace FontValidator
             }
 
 
-            ProgressForm formx = new ProgressForm();
+            var formx = new ProgressForm();
             formx.Text = "Saving report as XLS..";
 
 
-            int totalCount = 0;
+            var totalCount = 0;
             foreach (var i in reporttab.TabPages)
             {
-                var listviews = GetAll(i as TabPage, typeof(ListView));
+                var tabpage = i as TabPage;
+                var listviews = tabpage.GetAll(typeof(ListView));
                 var listview = (ListView)listviews.ElementAt(0);
                 foreach (var j in listview.Columns)
                     foreach (var k in listview.Items)
@@ -1140,51 +1026,45 @@ namespace FontValidator
             formx.DoWork += (sender1, args) =>
             {
                 // add column header
-                int tab_idx = 1;
+                var tab_idx = 1;
 
 
-                int progressCount = 0;
+                var progressCount = 0;
                 foreach (var i in reporttab.TabPages)
                 {
                     try
                     {
                         var tabpage = i as TabPage;
 
-                        Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(tab_idx);
+                        var xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(tab_idx);
                         xlWorkSheet.Name = tabpage.Text;
 
-                        var listviews = GetAll(tabpage, typeof(ListView));
+                        var listviews = tabpage.GetAll(typeof(ListView));
                         var listview = (ListView)listviews.ElementAt(0);
 
-                        int column_idx = 1;
+                        var column_idx = 1;
 
                         var columnlist = listview.Columns;
 
-                        for (int j = 0; j < columnlist.Count; ++j)
+                        for (var j = 0; j < columnlist.Count; ++j)
                         {
                             // first row is header  
-                            ColumnHeader columheader = new ColumnHeader();
+                            var columheader = new ColumnHeader();
 
-                            listview.InvokeIfRequired(new Action(() =>
-                            {
-                                columheader = columnlist[j];
-                            }));
+                            listview.InvokeIfRequired(() => { columheader = columnlist[j]; });
 
 
                             xlWorkSheet.Cells[1, column_idx] = columheader.Text;
 
-                            int row_idx = 2;
+                            var row_idx = 2;
 
                             var listviewItems = listview.Items;
 
-                            for (int k = 0; k < listviewItems.Count; ++k)
+                            for (var k = 0; k < listviewItems.Count; ++k)
                             {
-                                ListViewItem item = new ListViewItem();
+                                var item = new ListViewItem();
 
-                                listview.InvokeIfRequired(new Action(() =>
-                                {
-                                    item = listviewItems[k];
-                                }));
+                                listview.InvokeIfRequired(() => { item = listviewItems[k]; });
 
                                 xlWorkSheet.Cells[row_idx, column_idx] = item.SubItems[column_idx - 1].Text;
                                 row_idx++;
@@ -1194,14 +1074,12 @@ namespace FontValidator
                                 {
                                     var percent = (double)progressCount / totalCount * 100;
 
-                                    sender1.InvokeIfRequired(new Action(() =>
+                                    sender1.InvokeIfRequired(() =>
                                     {
                                         sender1.DefaultStatusText = "Populate report into Excel cells..";
                                         sender1.SetProgress((int)percent);
                                         sender1.ProgressBar.Update();
-                                    }));
-
-
+                                    });
                                 }
                             }
 
@@ -1218,15 +1096,14 @@ namespace FontValidator
                 }
             };
             formx.ProgressBar.MarqueeAnimationSpeed = 1;
-            DialogResult result = formx.ShowDialog();
+            var result = formx.ShowDialog();
 
 
-
-            SaveFileDialog savefile = new SaveFileDialog();
+            var savefile = new SaveFileDialog();
             savefile.FileName = "TWVReport.xls";
             savefile.Filter = "Excel files (*.xls)|*.xls";
 
-            bool tryAgain = true;
+            var tryAgain = true;
             while (tryAgain)
             {
                 if (savefile.ShowDialog() == DialogResult.OK)
@@ -1234,8 +1111,8 @@ namespace FontValidator
                     try
                     {
                         xlApp.DisplayAlerts = false;
-                        xlWorkBook.SaveAs(savefile.FileName, Excel.XlFileFormat.xlWorkbookNormal,
-                            misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive,
+                        xlWorkBook.SaveAs(savefile.FileName, XlFileFormat.xlWorkbookNormal,
+                            misValue, misValue, misValue, misValue, XlSaveAsAccessMode.xlExclusive,
                             misValue, misValue, misValue, misValue, misValue);
                         xlWorkBook.Close(true, misValue, misValue);
                         xlApp.Quit();
@@ -1246,11 +1123,10 @@ namespace FontValidator
                         if (MessageBox.Show("Report successfully saved.\nShow report?", "Font batch checker",
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-
                             if (File.Exists(savefile.FileName))
                             {
-                                string argument = @"/select, " + savefile.FileName;
-                                System.Diagnostics.Process.Start("explorer.exe", argument);
+                                var argument = @"/select, " + savefile.FileName;
+                                Process.Start("explorer.exe", argument);
                                 tryAgain = false;
                             }
                         }
@@ -1267,20 +1143,19 @@ namespace FontValidator
                 else
                     tryAgain = false;
             }
-
         }
 
         private void releaseObject(object obj)
         {
             try
             {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+                Marshal.ReleaseComObject(obj);
                 obj = null;
             }
             catch (Exception ex)
             {
                 obj = null;
-                MessageBox.Show("Exception Occured while releasing object " + ex.ToString());
+                MessageBox.Show("Exception Occured while releasing object " + ex);
             }
             finally
             {
@@ -1295,10 +1170,10 @@ namespace FontValidator
             var reportMaker = e.Argument as ReportMaker;
             reportMaker.Generate(sender);
 
-            m_result_datas = reportMaker.GetResult();
-            m_result_drm_data = reportMaker.GetResultDRM();
+            _mResultDatas = reportMaker.GetResult();
+            _mResultDrmData = reportMaker.GetResultDRM();
 
-            id_drm = reportMaker.GetIDDRM();
+            _idDrm = reportMaker.GetIDDRM();
 
             //e.Result = new KeyValuePair<List<IDData>, List<DRMData>>(result_datas, result_drm_data);
 
@@ -1313,13 +1188,13 @@ namespace FontValidator
 
         private void viewDRMReport_Click(object sender, EventArgs e)
         {
-            if (m_report_generated)
-                drmForm.Show();
+            if (_mReportGenerated)
+                _drmForm.Show();
         }
 
         private void reportTab_Selected(object sender, TabControlEventArgs e)
         {
-            m_selected_tab_report = e.TabPage.Text;
+            _mSelectedTabReport = e.TabPage.Text;
         }
 
         private void searchButton_Click(object sender, EventArgs e)
@@ -1327,52 +1202,52 @@ namespace FontValidator
             if (searchTextBox.Text.Equals(string.Empty))
                 return;
 
-            if (searchItem.previousFoundSubItem != null)
-                searchItem.previousFoundSubItem.BackColor = searchItem.previousFoundSubItemColor;
+            if (_searchItem.previousFoundSubItem != null)
+                _searchItem.previousFoundSubItem.BackColor = _searchItem.previousFoundSubItemColor;
 
-            TabPage activeTab = new TabPage();
+            var activeTab = new TabPage();
 
             foreach (var i in reporttab.TabPages)
             {
                 var tabPage = i as TabPage;
 
-                if (!tabPage.Text.Equals(m_selected_tab_report)) continue;
+                if (!tabPage.Text.Equals(_mSelectedTabReport)) continue;
                 activeTab = tabPage;
                 break;
             }
 
-            if (activeTab.Text.Equals(String.Empty))
+            if (activeTab.Text.Equals(string.Empty))
                 return;
 
-            var listviews = GetAll(activeTab, typeof(ListView));
+            var listviews = activeTab.GetAll(typeof(ListView));
             var listview = (ListView)listviews.ElementAt(0);
 
-            if (searchItem.currentSearchIndexListViewItem >= listview.Items.Count)
+            if (_searchItem.currentSearchIndexListViewItem >= listview.Items.Count)
                 return;
 
-            if (searchItem.currentSearchString == null || !searchItem.currentSearchString.Equals(searchTextBox.Text))
+            if (_searchItem.currentSearchString == null || !_searchItem.currentSearchString.Equals(searchTextBox.Text))
             {
-                searchItem.currentSearchIndexListViewItem = 0;
-                searchItem.currentSearchIndexListViewSubItem = 0;
+                _searchItem.currentSearchIndexListViewItem = 0;
+                _searchItem.currentSearchIndexListViewSubItem = 0;
             }
 
-            searchItem.currentSearchString = searchTextBox.Text;
+            _searchItem.currentSearchString = searchTextBox.Text;
 
-            var foundItem = listview.FindItemWithText(searchItem.currentSearchString, true,
-                searchItem.currentSearchIndexListViewItem, true);
+            var foundItem = listview.FindItemWithText(_searchItem.currentSearchString, true,
+                _searchItem.currentSearchIndexListViewItem, true);
 
-            if (foundItem == null && searchItem.currentSearchIndexListViewItem == 0)
+            if (foundItem == null && _searchItem.currentSearchIndexListViewItem == 0)
             {
                 MessageBox.Show("Item not found");
                 return;
             }
 
-            else if (foundItem == null && searchItem.currentSearchIndexListViewItem != 0)
+            if (foundItem == null && _searchItem.currentSearchIndexListViewItem != 0)
             {
-                searchItem.currentSearchIndexListViewItem = 0;
-                searchItem.currentSearchIndexListViewSubItem = 0;
-                foundItem = listview.FindItemWithText(searchItem.currentSearchString, true,
-                    searchItem.currentSearchIndexListViewItem, true);
+                _searchItem.currentSearchIndexListViewItem = 0;
+                _searchItem.currentSearchIndexListViewSubItem = 0;
+                foundItem = listview.FindItemWithText(_searchItem.currentSearchString, true,
+                    _searchItem.currentSearchIndexListViewItem, true);
             }
 
             var subitemindexfound = new List<int>();
@@ -1380,10 +1255,10 @@ namespace FontValidator
             listview.TopItem = foundItem;
             foundItem.EnsureVisible();
 
-            for (int j = 0; j < foundItem.SubItems.Count; j++)
+            for (var j = 0; j < foundItem.SubItems.Count; j++)
             {
                 if (listview.Columns[j].Width == 0)
-                    continue;//skip hidden column
+                    continue; //skip hidden column
 
                 //foundItem.SubItems[j].BackColor = default(Color);
 
@@ -1401,49 +1276,179 @@ namespace FontValidator
             if (subitemindexfound.Count == 1)
             {
                 listview.EnsureVisible(foundItem, subitemindexfound[0]);
-                searchItem.previousFoundSubItem = foundItem.SubItems[subitemindexfound[0]];
-                searchItem.previousFoundSubItemColor = foundItem.SubItems[subitemindexfound[0]].BackColor;
+                _searchItem.previousFoundSubItem = foundItem.SubItems[subitemindexfound[0]];
+                _searchItem.previousFoundSubItemColor = foundItem.SubItems[subitemindexfound[0]].BackColor;
                 foundItem.SubItems[subitemindexfound[0]].BackColor = Color.Yellow;
 
-                searchItem.currentSearchIndexListViewSubItem = 0;
-                searchItem.currentSearchIndexListViewItem = foundItem.Index + 1;
+                _searchItem.currentSearchIndexListViewSubItem = 0;
+                _searchItem.currentSearchIndexListViewItem = foundItem.Index + 1;
             }
             else if (subitemindexfound.Count > 1)
             {
-                var subitemIndex = subitemindexfound[searchItem.currentSearchIndexListViewSubItem];
+                var subitemIndex = subitemindexfound[_searchItem.currentSearchIndexListViewSubItem];
 
                 listview.EnsureVisible(foundItem, subitemIndex);
-                searchItem.previousFoundSubItem = foundItem.SubItems[subitemIndex];
-                searchItem.previousFoundSubItemColor = foundItem.SubItems[subitemIndex].BackColor;
+                _searchItem.previousFoundSubItem = foundItem.SubItems[subitemIndex];
+                _searchItem.previousFoundSubItemColor = foundItem.SubItems[subitemIndex].BackColor;
                 foundItem.SubItems[subitemIndex].BackColor = Color.Yellow;
 
-                searchItem.currentSearchIndexListViewSubItem++;
+                _searchItem.currentSearchIndexListViewSubItem++;
 
-                if (searchItem.currentSearchIndexListViewSubItem >= subitemindexfound.Count)
+                if (_searchItem.currentSearchIndexListViewSubItem >= subitemindexfound.Count)
                 {
-                    searchItem.currentSearchIndexListViewSubItem = 0;
-                    searchItem.currentSearchIndexListViewItem = foundItem.Index + 1;
+                    _searchItem.currentSearchIndexListViewSubItem = 0;
+                    _searchItem.currentSearchIndexListViewItem = foundItem.Index + 1;
                 }
             }
         }
 
-        private void wizardPage4_Commit(object sender, AeroWizard.WizardPageConfirmEventArgs e)
+        private void UIWizard_Load(object sender, EventArgs e)
+        {
+            var title = new Font("Segoe UI", 12F,
+                FontStyle.Regular, GraphicsUnit.World, 0);
+            var header = new Font("Segoe UI", 30,
+                FontStyle.Bold, GraphicsUnit.World, 0);
+            var button = new Font("Segoe UI", 12F,
+                FontStyle.Regular, GraphicsUnit.World, 0);
+
+            wizardControl.OverrideThemeFonts(title, header, button);
+
+            _drmForm = new DRMForm(this);
+            _drmForm.DRMListView.ColumnClick +=
+                ListView_ColumnClick;
+        }
+
+        private void wizardPage1_Commit(object sender, WizardPageConfirmEventArgs e)
+        {
+            var strRcCount = ResourceFilesStrListView.Items.Count;
+
+            if (!ResourceFilesStrListView.Enabled || !ResourceFileNumTextBox.Enabled || !FontFileTextBox.Enabled)
+            {
+                MessageBox.Show("All fields except \"DRM File\" are compulsory.\nPlease fill them.");
+                e.Cancel = true;
+                return;
+            }
+
+            if (strRcCount < 1 || _mReportParam.m_num_file.Equals(string.Empty) ||
+                _mReportParam.m_ttf_file.Equals(string.Empty))
+            {
+                MessageBox.Show("All fields except \"DRM File\" are compulsory.\nPlease fill them.");
+                e.Cancel = true;
+                return;
+            }
+
+
+            Item2IncludeTabs.Enabled = strRcCount > 0 ? true : false;
+
+            // clean up added tabs
+            for (var i = Item2IncludeTabs.TabCount - 1; i >= 1; i--)
+                Item2IncludeTabs.TabPages.RemoveAt(i);
+
+            _mReportParam.m_str_files.Clear();
+            var strFilesNames = new List<string>();
+
+            for (var i = 0; i < strRcCount; ++i)
+            {
+                var title = ResourceFilesStrListView.Items[i].Text;
+                if (i == 0)
+                    Item2IncludeTabs.TabPages[0].Text = title;
+                else if (i > 0) // create tab if more than 1
+                {
+                    var myTabPage = new TabPage(title);
+                    myTabPage.BackColor = Color.White;
+                    Item2IncludeTabs.TabPages.Add(myTabPage);
+                }
+
+                _mReportParam.m_str_files.Add(title,
+                    ResourceFilesStrListView.Items[i].SubItems[1].Text);
+
+                strFilesNames.Add(title);
+            }
+
+            _mCheckboxes = new Checkboxes(strFilesNames);
+            _mCheckboxes.current_selected_tab_name = Item2IncludeTabs.TabPages[0].Text;
+        }
+
+        private void wizardPage2_Commit(object sender, WizardPageConfirmEventArgs e)
+        {
+            _mReportParam.m_cpp_files.Clear();
+
+            for (var i = 0; i < CPPFilesListView.Items.Count; ++i)
+            {
+                var title = CPPFilesListView.Items[i].Text;
+                _mReportParam.m_cpp_files.Add(title,
+                    CPPFilesListView.Items[i].SubItems[1].Text);
+            }
+
+            if (_mReportParam.m_cpp_files.Count == 0)
+            {
+                MessageBox.Show("No file added.\nPlease add some before proceeding.");
+                e.Cancel = true;
+            }
+        }
+
+        private void wizardPage3_Initialize(object sender, EventArgs e)
+        {
+            if (_mReportGenerated)
+                return;
+
+            // clear old stuff
+            {
+                _mCheckboxes.m_layout_checkboxes.Clear();
+                var tab_checkbox = _mCheckboxes.m_tab_checkboxes;
+                foreach (var tab in tab_checkbox)
+                    tab.Value.m_tab_checkbox.Clear();
+            }
+
+            var df = (WizardPage)sender;
+
+            var all_checkbox = df.GetAll(typeof(CheckBox));
+            _mCheckboxControls = all_checkbox;
+
+            foreach (var chxbx in all_checkbox)
+            {
+                var item = (CheckBox)chxbx;
+                var chkbx_name = item.Name;
+                var chxbx_tag = item.Tag.ToString();
+                var chxbx_state = item.Checked;
+
+                if (chkbx_name.Contains("tab_"))
+                {
+                    var tab_checkbox = _mCheckboxes.m_tab_checkboxes;
+                    foreach (var tab in tab_checkbox)
+                    {
+                        tab.Value.m_tab_checkbox.Add(chxbx_tag, chxbx_state);
+                    }
+                }
+                else
+                    _mCheckboxes.m_layout_checkboxes.Add(chxbx_tag, chxbx_state);
+            }
+
+            Item2IncludePresetComboBox.SelectedIndex = 0;
+        }
+
+        private void wizardPage3_Commit(object sender, WizardPageConfirmEventArgs e)
+        {
+            _createReportTabs();
+        }
+
+        private void wizardPage4_Initialize(object sender, WizardPageInitEventArgs e)
+        {
+            if (_mReportGenerated)
+                show_relevant_columns();
+            else
+                Generate_Click(sender, e);
+
+            viewDRMReport.Enabled = _mReportGenerated && _mResultDrmData.Count > 0;
+        }
+
+        private void wizardPage4_Commit(object sender, WizardPageConfirmEventArgs e)
         {
             if (MessageBox.Show("Exiting...\nAre you sure?", "Exit",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
             {
                 e.Cancel = true;
             }
-        }
-
-        private void wizardPage4_Initialize(object sender, AeroWizard.WizardPageInitEventArgs e)
-        {
-            if (m_report_generated)
-                show_relevant_columns();
-            else
-                Generate_Click(sender, e);
-
-            viewDRMReport.Enabled = m_report_generated && m_result_drm_data.Count > 0;
         }
 
         private void searchTextBox_Click(object sender, EventArgs e)
@@ -1456,24 +1461,97 @@ namespace FontValidator
             show_fail_combobox.Text = "";
             show_fail_combobox.DroppedDown = true;
         }
+
+        private void EnableEditTextFunctionality(ListView listView)
+        {
+            listView.Controls.Add(txtEditor);
+            txtEditor.Leave += (o, e) =>
+            {
+                txtEditor.Visible = false;
+                var info = txtEditor.Tag as ListViewHitTestInfo;
+                var subitem = info.SubItem;
+                subitem.Text = txtEditor.Text;
+
+                var idData = _mResultDatas[info.Item.Index];
+                var textValues = idData.text_values;
+                StringResult textValue = null;
+                foreach (var i in textValues)
+                {
+                    if (i.label.Equals(_mSelectedTabReport))
+                    {
+                        textValue = i;
+                        break;
+                    }
+                }
+                if (textValue == null)
+                    return;
+
+                textValue.value_string = info.SubItem.Text;
+
+                _reportMaker.ComputeSubValue(idData, ref textValue);
+                
+                info.Item.SubItems[14].Text = textValue.value_string;
+                info.Item.SubItems[15].Text = textValue.calc_base_width.ToString();
+                info.Item.SubItems[16].Text = textValue.calc_w_tolerance_width.ToString();
+                info.Item.SubItems[17].Text = textValue.calc_base_height.ToString();
+                info.Item.SubItems[18].Text = textValue.calc_w_tolerance_height.ToString();
+                info.Item.SubItems[19].Text = textValue.calc_row_count.ToString();
+
+                info.Item.SubItems[20].Text = textValue.is_ok_width ? "OK" : "NOT OK";
+                info.Item.SubItems[20].BackColor = textValue.is_ok_width ? info.Item.SubItems[20].BackColor : Color.Red;
+                info.Item.SubItems[21].Text = textValue.is_ok_width ? "OK" : "NOT OK";
+                info.Item.SubItems[21].BackColor = textValue.is_ok_width ? info.Item.SubItems[21].BackColor : Color.Red;
+
+                foreach (var k in info.Item.SubItems)
+                {
+                    var m = (ListViewItem.ListViewSubItem)k;
+
+                    if (!textValue.is_ok_height || !textValue.is_ok_width)
+                    {
+                        if (m.BackColor != Color.Red)
+                            m.BackColor = Color.MistyRose;
+                    }
+                    else
+                        m.BackColor = default(Color);
+                }
+
+            };
+        }
+
+        private void ReportListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            var list = (ListView)sender;
+            var info = list.HitTest(e.X, e.Y);
+
+            if(!info.Item.SubItems[14].Equals(info.SubItem))
+                return;
+
+            txtEditor.Bounds = info.SubItem.Bounds;
+            txtEditor.Text = info.SubItem.Text;
+            txtEditor.SelectAll();
+            txtEditor.Visible = true;
+            txtEditor.Focus();
+            txtEditor.Tag = info;
+        }
     }
 
     public static class Extender
     {
-        const Int32 LVM_FIRST = 0x1000;
-        const Int32 LVM_SCROLL = LVM_FIRST + 20;
-        const int MARGIN = 0;
+        private const int LVM_FIRST = 0x1000;
+        private const int LVM_SCROLL = LVM_FIRST + 20;
+        private const int MARGIN = 0;
 
         [DllImport("user32")]
-        static extern IntPtr SendMessage(IntPtr Handle, Int32 msg, IntPtr wParam,
-        IntPtr lParam);
+        private static extern IntPtr SendMessage(IntPtr Handle, int msg, IntPtr wParam,
+            IntPtr lParam);
 
         private static void ScrollHorizontal(this IntPtr handle, int pixelsToScroll)
         {
             SendMessage(handle, LVM_SCROLL, (IntPtr)pixelsToScroll,
-            IntPtr.Zero);
+                IntPtr.Zero);
         }
 
+        // invokeifrequired shorthand extension
         public static void InvokeIfRequired(this Control control, Action action)
         {
             // wait for 2 sec max
@@ -1503,13 +1581,13 @@ namespace FontValidator
 
             // scroll to the item row.
 
-            Rectangle bounds = listViewItem.SubItems[subItemIndex].Bounds;
+            var bounds = listViewItem.SubItems[subItemIndex].Bounds;
 
             // need to set width from columnheader, first subitem includes
             // all subitems.
             bounds.Width = listView.Columns[subItemIndex].Width;
 
-            int scrollToLeft = bounds.X + bounds.Width + MARGIN;
+            var scrollToLeft = bounds.X + bounds.Width + MARGIN;
             //if (scrollToLeft > listView.Bounds.Width)
             //{
             //    var s1 = scrollToLeft - listView.Bounds.Width;
@@ -1518,12 +1596,22 @@ namespace FontValidator
             //}
             //else
             {
-                int scrollToRight = bounds.X - MARGIN;
+                var scrollToRight = bounds.X - MARGIN;
                 //if (scrollToRight < 0)
                 //{
                 listView.Handle.ScrollHorizontal(scrollToRight);
                 //}
             }
+        }
+
+        public static IEnumerable<Control> GetAll(this Control control, Type type)
+        {
+            var controls = control.Controls.Cast<Control>();
+
+            var controlList = controls as IList<Control> ?? controls.ToList();
+            return controlList.SelectMany(ctrl => ctrl.GetAll(type))
+                .Concat(controlList)
+                .Where(c => c.GetType() == type);
         }
     }
 }

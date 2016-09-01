@@ -37,7 +37,7 @@ namespace FontValidator
         private List<DRMData> m_drm_data = new List<DRMData>();
         private HashSet<string> m_scrollable_id = new HashSet<string>();
         private Dictionary<int, string> drm_result_line = new Dictionary<int, string>();
-        private FontService _fontService = new FontService();
+        public FontService fontService = new FontService();
 
         private IDData id_drm = new IDData();
 
@@ -70,7 +70,7 @@ namespace FontValidator
             if (m_report_maker.m_ttf_file != "")
             {
                 m_privateFontCollection.AddFontFile(m_report_maker.m_ttf_file);
-                _fontService.SetFont(m_report_maker.m_ttf_file);
+                fontService.SetFont(m_report_maker.m_ttf_file);
             }
                 
 
@@ -137,12 +137,22 @@ namespace FontValidator
                 pForm.SetProgress((int)(double)counter * 30 / count, "Collecting IDs... ");
             });
 
+            var alltextrotatelines = string.Empty;
+
             foreach (var cpp in cppprocessors)
             {
+                foreach (var i in cpp.textRotate_lines)
+                {
+                    alltextrotatelines += i + Environment.NewLine;
+                }
+
                 m_ID_data.AddRange(cpp.cpp_layout_IDs);
                 foreach (var i in cpp.scrollable_textbox_id)
                     m_scrollable_id.Add(i);
             }
+
+            foreach (var id in m_ID_data)
+                    id.rotated = alltextrotatelines.Contains(id.textbox_id).ToString().ToUpper();
         }
 
         private void _process_rc_files(ProgressForm pForm)
@@ -224,89 +234,6 @@ namespace FontValidator
 
         private void _queryresult(ProgressForm pForm)
         {
-            var str_result = new StringResult();
-
-            // this action compute each string value, based on language
-            Action<IDData, string, string> compute_sub_value = (id, label, str) =>
-            {
-                str_result.value_string = str;
-                str_result.label = label;
-                //str_result.calc_base_width = _measure_string_gdiplus(str, id.fontface).Width;
-                //str_result.calc_base_height = _measure_string_gdiplus(str, id.fontface).Height;
-                str_result.calc_base_width = _fontService.MeasureString(str, id.fontface.Size).Key;
-                str_result.calc_base_height = _fontService.MeasureString(str, id.fontface.Size).Value;
-
-
-                str_result.calc_w_tolerance_width = Convert.ToDouble(str_result.calc_base_width) * (1 + m_report_maker.m_tolerance_width / 100);   // tolerance_height
-                str_result.calc_w_tolerance_height = Convert.ToDouble(str_result.calc_base_height) * (1 + m_report_maker.m_tolerance_height / 100); // tolerance
-
-                //str_result.calc_ml_row_count_manual.Key = 1.0;   
-                //str_result.calc_ml_manual_max_width.Key = 0;
-                //if (id.multiline == "TRUE")
-                //{
-                //    //// this is to calculate multiline with /n ///////
-                //    //// begin handling of \n
-                //    //// we separate oneliner to multiple lines based on \n
-                //    //var str_temp = str;
-                //    //var literal_row = new List<string>();
-                //    //var m = Regex.Match(str_temp, @"(.*?)(\\n)");
-                //    //while (m.Success)
-                //    //{
-                //    //    literal_row.Add(m.Groups[1].Value);
-                //    //    m = m.NextMatch();
-                //    //}
-                //    //literal_row.Add(Regex.Replace(str_temp, @"(.*?)(\\n)", string.Empty));
-
-                //    //str_result.calc_ml_row_count_manual.Key = literal_row.Count;
-                //    //foreach (var row in literal_row)
-                //    //{
-                //    //    var num = _measure_string_gdiplus(row, id.fontface).Width;
-                //    //    if (num > str_result.calc_ml_manual_max_width.Key)
-                //    //        str_result.calc_ml_manual_max_width.Key = num;
-                //    //}
-                //    //// end
-                //}
-
-                if (id.multiline == "TRUE")
-                {
-                    var raw_value = str_result.calc_w_tolerance_width / Convert.ToDouble(id.width.Value);
-                    str_result.calc_row_count = Math.Ceiling(raw_value);
-                    str_result.is_ok_width = true;
-                }
-                else
-                {
-                    str_result.calc_row_count = 1;
-                }
-
-                if (id.scrollable == "TRUE")
-                {
-                    str_result.is_ok_width = true;
-                }
-                else if (id.multiline == "FALSE")
-                {
-                    var total_width = Convert.ToDouble(id.width.Value)/* - 2 * Convert.ToDouble(id.padding.Value)*/;
-                    //str_result.is_ok_width = str_result.calc_w_tolerance_width < total_width;
-
-                    str_result.is_ok_width = (str_result.calc_base_width < total_width);
-
-                    if (!str_result.is_ok_width)
-                        str_result.is_ok_width = (Math.Abs(str_result.calc_base_width - total_width) <
-                            (str_result.calc_base_width * m_report_maker.m_tolerance_width));
-
-
-
-                }
-
-                var total_height = Convert.ToDouble(id.height.Value) /*- 2 * Convert.ToDouble(id.padding.Value)*/;
-                //str_result.is_ok_height = (str_result.calc_w_tolerance_height * str_result.calc_row_count) < total_height;
-
-                str_result.is_ok_height = (str_result.calc_base_height < total_height);
-
-                if (!str_result.is_ok_height)
-                    str_result.is_ok_height = (Math.Abs(str_result.calc_base_height - total_height) <
-                        (str_result.calc_base_height * m_report_maker.m_tolerance_height));
-            };
-
             foreach (var i in m_ID_data)
             {
                 if (i.textbox_id == "TextBox_OSS_DRM_Scroll")
@@ -319,12 +246,70 @@ namespace FontValidator
 
                 for (int j = 0; j < i.text_values.Count; ++j)
                 {
-                    str_result = i.text_values.ElementAt(j);
-                    compute_sub_value(i, str_result.label, str_result.value_string);
+                    var strResult = i.text_values.ElementAt(j);
+                    ComputeSubValue(i, ref strResult);
                 }
             }
 
             //m_ID_data.Remove(id_drm);
+        }
+
+        public void ComputeSubValue(IDData id, ref StringResult strResult)
+        {
+            strResult.calc_base_width = fontService.MeasureString(strResult.value_string, id.fontface.Size).Key;
+            strResult.calc_base_height = fontService.MeasureString(strResult.value_string, id.fontface.Size).Value;
+            strResult.calc_w_tolerance_width = Convert.ToDouble(strResult.calc_base_width)*
+                                               (1 + m_report_maker.m_tolerance_width/100); // tolerance_height
+            strResult.calc_w_tolerance_height = Convert.ToDouble(strResult.calc_base_height)*
+                                                (1 + m_report_maker.m_tolerance_height/100); // tolerance
+
+            // swap values between height and width for rotated textbox
+            if (id.rotated == "TRUE")
+            {
+                var temp = strResult.calc_base_width;
+                strResult.calc_base_width = strResult.calc_base_height;
+                strResult.calc_base_height = temp;
+
+                var temp2 = strResult.calc_w_tolerance_width;
+                strResult.calc_w_tolerance_width = strResult.calc_w_tolerance_height;
+                strResult.calc_w_tolerance_height = temp2;
+            }
+
+            if (id.multiline == "TRUE")
+            {
+                var raw_value = strResult.calc_w_tolerance_width/Convert.ToDouble(id.width.Value);
+                strResult.calc_row_count = Math.Ceiling(raw_value);
+                strResult.is_ok_width = true;
+            }
+            else
+            {
+                strResult.calc_row_count = 1;
+            }
+
+            if (id.scrollable == "TRUE")
+            {
+                strResult.is_ok_width = true;
+            }
+            else if (id.multiline == "FALSE")
+            {
+                var total_width = Convert.ToDouble(id.width.Value) /* - 2 * Convert.ToDouble(id.padding.Value)*/;
+                //str_result.is_ok_width = str_result.calc_w_tolerance_width < total_width;
+
+                strResult.is_ok_width = (strResult.calc_base_width < total_width);
+
+                if (!strResult.is_ok_width)
+                    strResult.is_ok_width = (Math.Abs(strResult.calc_base_width - total_width) <
+                                             (strResult.calc_base_width*m_report_maker.m_tolerance_width));
+            }
+
+            var total_height = Convert.ToDouble(id.height.Value) /*- 2 * Convert.ToDouble(id.padding.Value)*/;
+            //str_result.is_ok_height = (str_result.calc_w_tolerance_height * str_result.calc_row_count) < total_height;
+
+            strResult.is_ok_height = (strResult.calc_base_height < total_height);
+
+            if (!strResult.is_ok_height)
+                strResult.is_ok_height = (Math.Abs(strResult.calc_base_height - total_height) <
+                                          (strResult.calc_base_height*m_report_maker.m_tolerance_height));
         }
 
         private void _queryresultdrm()
@@ -359,7 +344,7 @@ namespace FontValidator
                 drmData.stringValue = i.Value;
 
                 //var base_width = _measure_string_gdiplus(i.Value, font).Width;
-                var base_width = _fontService.MeasureString(i.Value, font.Size).Key;
+                var base_width = fontService.MeasureString(i.Value, font.Size).Key;
 
                 if (base_width == 0.0)
                     continue;

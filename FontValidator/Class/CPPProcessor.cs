@@ -16,6 +16,8 @@ namespace FontValidator
         public ConcurrentBag<string> scrollable_textbox_id = new ConcurrentBag<string>();
         public String cpp_file;
 
+        public ConcurrentBag<string> textRotate_lines = new ConcurrentBag<string>();
+
         public CPPProcessor(String file)
         {
             cpp_file = file;
@@ -41,6 +43,13 @@ namespace FontValidator
                     for (int i = 0; i < alltext.Count; ++i)
                     {
                         var text = alltext.ElementAt(i);
+
+                        // collect all line with "style.text_rotate".
+                        if (Regex.IsMatch(text, @"style.text_rotate"))
+                        {
+                            textRotate_lines.Add(text);
+                        }
+
                         const string header = @"rc.set";
                         const string footer = @"AddChild";
                         bool header_found = Regex.Match(text, header).Success;
@@ -79,7 +88,7 @@ namespace FontValidator
                     rgxs[2] = new Regex(@"(ID_FONT_SIZE\w+)");   //find_fontsize_id
                     rgxs[3] = new Regex(@"SetMultiline\((\w+)");   //find_multiline_flag
                     rgxs[4] = new Regex(@"E_WDG_PADDING_INT(?:.*?)GetRcEngine::RcGetNum(?:.*?)([A-Z_0-9]+)\);");   //find internal padding
-                    rgxs[5] = new Regex(@"([\S]+)(?:\s=\snew\s\(std::nothrow\))");
+                    rgxs[5] = new Regex(@"([\S]+)(?:\s=\snew\s\(std::nothrow\))"); // find textbox id
 
                     Parallel.For(0, bunch_of_lines_collection.Count, i =>
                     {
