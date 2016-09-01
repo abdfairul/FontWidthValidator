@@ -76,7 +76,7 @@ namespace FontValidator
             // 
             // columnHeader4
             // 
-            this.columnHeader4.Text = "Width (+ tol)";
+            this.columnHeader4.Text = "Width";
             // 
             // columnHeader5
             // 

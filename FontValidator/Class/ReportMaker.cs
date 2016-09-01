@@ -341,10 +341,18 @@ namespace FontValidator
             {
                 var drmData = new DRMData();
                 drmData.lineNumber = i.Key;
-                drmData.stringValue = i.Value;
+
+
+                // should get rid of escaped characters here
+                drmData.stringValue = Regex.Unescape(i.Value);
+                //drmData.stringValue = i.Value;
+
+                
+
+
 
                 //var base_width = _measure_string_gdiplus(i.Value, font).Width;
-                var base_width = fontService.MeasureString(i.Value, font.Size).Key;
+                var base_width = fontService.MeasureString(drmData.stringValue, font.Size).Key;
 
                 if (base_width == 0.0)
                     continue;
