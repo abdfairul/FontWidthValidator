@@ -1333,8 +1333,7 @@ namespace FontValidator
                 e.Cancel = true;
                 return;
             }
-
-
+            
             Item2IncludeTabs.Enabled = strRcCount > 0 ? true : false;
 
             // clean up added tabs
@@ -1368,6 +1367,13 @@ namespace FontValidator
 
         private void wizardPage2_Commit(object sender, WizardPageConfirmEventArgs e)
         {
+            if (!CPPFilesListView.Enabled)
+            {
+                MessageBox.Show("No file added.\nPlease add some before proceeding.");
+                e.Cancel = true;
+                return;
+            }
+
             _mReportParam.m_cpp_files.Clear();
 
             for (var i = 0; i < CPPFilesListView.Items.Count; ++i)

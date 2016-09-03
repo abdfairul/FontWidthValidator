@@ -205,7 +205,7 @@
             this.wizardPage1.Name = "wizardPage1";
             this.wizardPage1.Size = new System.Drawing.Size(737, 407);
             this.wizardPage1.TabIndex = 0;
-            this.wizardPage1.Text = "Step 1 of 4 : Add resource, font and drm files";
+            this.wizardPage1.Text = "Step 1 of 4 : Add resource files";
             this.wizardPage1.Commit += new System.EventHandler<AeroWizard.WizardPageConfirmEventArgs>(this.wizardPage1_Commit);
             // 
             // groupBox4
@@ -1060,7 +1060,7 @@
             this.wizardPage4.Name = "wizardPage4";
             this.wizardPage4.Size = new System.Drawing.Size(737, 407);
             this.wizardPage4.TabIndex = 3;
-            this.wizardPage4.Text = "Step 4 of 4 : Apply tolerance and view report";
+            this.wizardPage4.Text = "Step 4 of 4 : View report";
             this.wizardPage4.Commit += new System.EventHandler<AeroWizard.WizardPageConfirmEventArgs>(this.wizardPage4_Commit);
             this.wizardPage4.Initialize += new System.EventHandler<AeroWizard.WizardPageInitEventArgs>(this.wizardPage4_Initialize);
             // 

@@ -359,12 +359,13 @@ namespace FontValidator
 
                 drmData.widthValue = base_width;
 
-                var w_tolerance_width = Convert.ToDouble(base_width) * (1 + m_report_maker.m_tolerance_width / 100);
+                //var w_tolerance_width = Convert.ToDouble(base_width) * (1 + m_report_maker.m_tolerance_width / 100);
 
                 drmData.layoutwidthtotal = Convert.ToDouble(id_drm.width.Value) /*- 2 * Convert.ToDouble(id_drm.padding.Value)*/;
                 //drmData.widthTest = w_tolerance_width < drmData.layoutwidthtotal;
 
-
+                //NOTE: check twice to prevent case where widthValue is small enough that it failed the test 
+                //
                 drmData.widthTest = (drmData.widthValue < drmData.layoutwidthtotal);
 
                 if (!drmData.widthTest)
