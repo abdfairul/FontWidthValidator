@@ -240,22 +240,48 @@ namespace FontValidator
 
         private void _queryresult(ProgressForm pForm)
         {
-            foreach (var i in m_ID_data)
+            Parallel.For(0, m_ID_data.Count, i =>
             {
-                if (i.textbox_id == "TextBox_OSS_DRM_Scroll")
+                var id = m_ID_data[i];
+                
+                if (id.textbox_id == "TextBox_OSS_DRM_Scroll")
                 {
-                    id_drm = i;
-                    continue;
+                    id_drm = id;
                 }
-
-                i.scrollable = m_scrollable_id.Contains(i.textbox_id) ? "TRUE" : "FALSE";
-
-                for (int j = 0; j < i.text_values.Count; ++j)
+                else
                 {
-                    var strResult = i.text_values.ElementAt(j);
-                    ComputeSubValue(i, ref strResult);
+                    id.scrollable = m_scrollable_id.Contains(id.textbox_id) ? "TRUE" : "FALSE";
+
+                    for (int j = 0; j < id.text_values.Count; ++j)
+                    {
+                        var strResult = id.text_values.ElementAt(j);
+                        lock (fontService)
+                        {
+                            ComputeSubValue(id, ref strResult);
+                        }
+                    }
                 }
-            }
+            });
+
+
+
+
+            //foreach (var i in m_ID_data)
+            //{
+            //    if (i.textbox_id == "TextBox_OSS_DRM_Scroll")
+            //    {
+            //        id_drm = i;
+            //        continue;
+            //    }
+
+            //    i.scrollable = m_scrollable_id.Contains(i.textbox_id) ? "TRUE" : "FALSE";
+
+            //    for (int j = 0; j < i.text_values.Count; ++j)
+            //    {
+            //        var strResult = i.text_values.ElementAt(j);
+            //        ComputeSubValue(i, ref strResult);
+            //    }
+            //}
 
             //m_ID_data.Remove(id_drm);
         }
@@ -352,10 +378,6 @@ namespace FontValidator
                 // should get rid of escaped characters here
                 drmData.stringValue = Regex.Unescape(i.Value);
                 //drmData.stringValue = i.Value;
-
-                
-
-
 
                 //var base_width = _measure_string_gdiplus(i.Value, font).Width;
                 var base_width = fontService.MeasureString(drmData.stringValue, font.Size).Key;

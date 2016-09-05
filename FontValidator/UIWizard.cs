@@ -65,6 +65,63 @@ namespace FontValidator
             TopLevel = true;
 
             _lvwColumnSorter = new ListViewColumnSorter();
+
+            Action<object, EventArgs> leaveAction = (s, a) =>
+            {
+                txtEditor.Visible = false;
+                var info = txtEditor.Tag as ListViewHitTestInfo;
+                var subitem = info.SubItem;
+                subitem.Text = txtEditor.Text;
+
+                var idData = _mResultDatas[Convert.ToInt32(info.Item.Text) - 1];
+                var textValues = idData.text_values;
+                StringResult textValue = null;
+                foreach (var i in textValues)
+                {
+                    if (i.label.Equals(_mSelectedTabReport))
+                    {
+                        textValue = i;
+                        break;
+                    }
+                }
+                if (textValue == null)
+                    return;
+
+                textValue.value_string = info.SubItem.Text;
+
+                // compute new string
+                _reportMaker.ComputeSubValue(idData, ref textValue);
+
+                // assign back values to listview
+                info.Item.SubItems[14].Text = textValue.value_string;
+                info.Item.SubItems[15].Text = textValue.calc_base_width.ToString();
+                info.Item.SubItems[16].Text = textValue.calc_w_tolerance_width.ToString();
+                info.Item.SubItems[17].Text = textValue.calc_base_height.ToString();
+                info.Item.SubItems[18].Text = textValue.calc_w_tolerance_height.ToString();
+                info.Item.SubItems[19].Text = textValue.calc_row_count.ToString();
+
+                info.Item.SubItems[20].Text = textValue.is_ok_width ? "OK" : "NOT OK";
+                info.Item.SubItems[20].BackColor = textValue.is_ok_width ? info.Item.SubItems[20].BackColor : Color.Red;
+                info.Item.SubItems[21].Text = textValue.is_ok_width ? "OK" : "NOT OK";
+                info.Item.SubItems[21].BackColor = textValue.is_ok_width ? info.Item.SubItems[21].BackColor : Color.Red;
+
+                // recolor to white if ok, red if not
+                foreach (var k in info.Item.SubItems)
+                {
+                    var m = (ListViewItem.ListViewSubItem)k;
+
+                    if (!textValue.is_ok_height || !textValue.is_ok_width)
+                    {
+                        if (m.BackColor != Color.Red)
+                            m.BackColor = Color.MistyRose;
+                    }
+                    else
+                        m.BackColor = default(Color);
+                }
+
+            };
+
+            txtEditor.Leave += leaveAction.Invoke;
         }
 
         public sealed override Size MinimumSize
@@ -134,6 +191,15 @@ namespace FontValidator
             {
                 for (var i = list.SelectedItems.Count - 1; i >= 0; i--)
                     list.SelectedItems[i].Remove();
+
+                // update count number
+                int count = 1;
+                foreach (var i in list.Items)
+                {
+                    var item = i as ListViewItem;
+                    item.Text = count.ToString();
+                    count++;
+                }
             }
 
             if (e.KeyCode == Keys.A && e.Control)
@@ -1510,65 +1576,6 @@ namespace FontValidator
                 return;
 
             list.Controls.Add(txtEditor);
-
-            Action<object, EventArgs> leaveAction = (s, a) =>
-                {
-                    txtEditor.Visible = false;
-                    var info = txtEditor.Tag as ListViewHitTestInfo;
-                    var subitem = info.SubItem;
-                    subitem.Text = txtEditor.Text;
-
-                    var idData = _mResultDatas[info.Item.Index];
-                    var textValues = idData.text_values;
-                    StringResult textValue = null;
-                    foreach (var i in textValues)
-                    {
-                        if (i.label.Equals(_mSelectedTabReport))
-                        {
-                            textValue = i;
-                            break;
-                        }
-                    }
-                    if (textValue == null)
-                        return;
-
-                    textValue.value_string = info.SubItem.Text;
-
-                    // compute new string
-                    _reportMaker.ComputeSubValue(idData, ref textValue);
-
-                    // assign back values to listview
-                    info.Item.SubItems[14].Text = textValue.value_string;
-                    info.Item.SubItems[15].Text = textValue.calc_base_width.ToString();
-                    info.Item.SubItems[16].Text = textValue.calc_w_tolerance_width.ToString();
-                    info.Item.SubItems[17].Text = textValue.calc_base_height.ToString();
-                    info.Item.SubItems[18].Text = textValue.calc_w_tolerance_height.ToString();
-                    info.Item.SubItems[19].Text = textValue.calc_row_count.ToString();
-
-                    info.Item.SubItems[20].Text = textValue.is_ok_width ? "OK" : "NOT OK";
-                    info.Item.SubItems[20].BackColor = textValue.is_ok_width ? info.Item.SubItems[20].BackColor : Color.Red;
-                    info.Item.SubItems[21].Text = textValue.is_ok_width ? "OK" : "NOT OK";
-                    info.Item.SubItems[21].BackColor = textValue.is_ok_width ? info.Item.SubItems[21].BackColor : Color.Red;
-
-                    // recolor to white if ok, red if not
-                    foreach (var k in info.Item.SubItems)
-                    {
-                        var m = (ListViewItem.ListViewSubItem)k;
-
-                        if (!textValue.is_ok_height || !textValue.is_ok_width)
-                        {
-                            if (m.BackColor != Color.Red)
-                                m.BackColor = Color.MistyRose;
-                        }
-                        else
-                            m.BackColor = default(Color);
-                    }
-
-                };
-
-            // remove event then add it again (to prevent multiple listener)
-            txtEditor.Leave -= leaveAction.Invoke;
-            txtEditor.Leave += leaveAction.Invoke;
 
             txtEditor.Bounds = hitInfo.SubItem.Bounds;
             txtEditor.Text = hitInfo.SubItem.Text;
