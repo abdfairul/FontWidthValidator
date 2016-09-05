@@ -92,14 +92,20 @@ namespace FontValidator
             return id_drm;
         }
 
-        public void Generate(ProgressForm pForm)
+        public bool Generate(ProgressForm pForm)
         {
             _process_drm_file();
             _process_cpp_files(pForm);    //10
+
+            if (m_ID_data.Count < 1)
+                return false;
+
             _process_rc_files(pForm);          // 60, 5, 20, 5, 30 ~70
             _create_fonts(pForm);              // 5
             _queryresult(pForm);               // 5
             _queryresultdrm();
+
+            return true;
         }
 
         public int ProgressReport()

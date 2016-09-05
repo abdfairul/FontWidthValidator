@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 /// <summary>
@@ -62,6 +64,11 @@ public class ListViewColumnSorter : IComparer
         // to handle numeric
         var xValue = listviewX.SubItems[ColumnToSort].Text;
         var yValue = listviewY.SubItems[ColumnToSort].Text;
+
+        // remove KB
+        xValue = Regex.Replace(xValue, @" KB$", string.Empty, RegexOptions.Multiline);
+        yValue = Regex.Replace(yValue, @" KB$", string.Empty, RegexOptions.Multiline);
+
         double xNumber = 0;
         double yNumber = 0;
         bool parsed = double.TryParse(xValue, out xNumber);

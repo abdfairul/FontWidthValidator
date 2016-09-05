@@ -643,6 +643,14 @@ namespace FontValidator
             //form.SetReportProgress(false);
 
             var result = form.ShowDialog();
+
+            if (form.Result.Result.ToString() == "ABORT")
+            {
+                MessageBox.Show(form, "No relevant IDs found in cpp files.\nPlease add correct CPP files", 
+                    "Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw (new Exception("ABORT"));
+            }
+            
             form.ProgressBar.MarqueeAnimationSpeed = 1;
             form.ProgressBar.Style = ProgressBarStyle.Marquee;
 
@@ -958,12 +966,20 @@ namespace FontValidator
                     if (tagname.Equals(i))
                     {
                         button.Checked = true;
+
+                        if (_mCheckboxes.m_layout_checkboxes.ContainsKey(tagname))
+                        {
+                            _mCheckboxes.m_layout_checkboxes[tagname] = !tagname.Contains("Padding");
+                        }
+
+                        
                         foreach (var j in _mCheckboxes.m_tab_checkboxes)
                         {
                             if (j.Value.m_tab_checkbox.ContainsKey(tagname))
                             {
                                 //hack: remove tolerance columm
                                 j.Value.m_tab_checkbox[tagname] = !tagname.Contains("(+tol)");
+
                             }
                         }
                     }
@@ -1165,7 +1181,11 @@ namespace FontValidator
             //_createReportTabs();
 
             var reportMaker = e.Argument as ReportMaker;
-            reportMaker.Generate(sender);
+            if (!reportMaker.Generate(sender))
+            {
+                e.Result = "ABORT";
+                return;
+            }
 
             _mResultDatas = reportMaker.GetResult();
             _mResultDrmData = reportMaker.GetResultDRM();
@@ -1181,6 +1201,7 @@ namespace FontValidator
             show_relevant_columns();
             Thread.Sleep(500);
             sender.SetProgress(100);
+            e.Result = "SUCCESS";
         }
 
         private void viewDRMReport_Click(object sender, EventArgs e)
@@ -1440,7 +1461,22 @@ namespace FontValidator
             if (_mReportGenerated)
                 show_relevant_columns();
             else
-                Generate_Click(sender, e);
+            {
+                try
+                {
+                    Generate_Click(sender, e);
+                }
+                catch (Exception b)
+                {
+                    if (b.Message == "ABORT")
+                    {
+                        wizardControl.PreviousPage();
+                        wizardControl.PreviousPage();
+                    }
+                        
+                }
+            }
+
 
             viewDRMReport.Enabled = _mReportGenerated && _mResultDrmData.Count > 0;
         }

@@ -29,35 +29,35 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UIWizard));
-            System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "(editable)",
             "(can add multiple files here, example below)"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "EN",
             ".../rc_magnavox/rc_EN/Str.rc"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem11 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
             "ES",
             ".../rc_magnavox/rc_ES/Str.rc"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem12 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
             "FR",
             ".../rc_magnavox/rc_FR/Str.rc"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem13 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
             "0",
             "(can add multiple files here, example below)",
             "0 KB"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem14 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
             "1",
             "../src/Mapp_4KDemoModeApp.cpp",
             "100 KB"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem15 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem(new string[] {
             "2",
             "../src/Mapp_4KDemoModeFrame.cpp",
             "200 KB"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem16 = new System.Windows.Forms.ListViewItem(new System.Windows.Forms.ListViewItem.ListViewSubItem[] {
+            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem(new System.Windows.Forms.ListViewItem.ListViewSubItem[] {
             new System.Windows.Forms.ListViewItem.ListViewSubItem(null, "3"),
             new System.Windows.Forms.ListViewItem.ListViewSubItem(null, "../src/Mapp_AgingMenuApp.cpp"),
             new System.Windows.Forms.ListViewItem.ListViewSubItem(null, "300 KB", System.Drawing.SystemColors.ControlDarkDark, System.Drawing.SystemColors.Window, new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.World))}, -1);
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UIWizard));
             this.wizardControl = new AeroWizard.WizardControl();
             this.wizardPage1 = new AeroWizard.WizardPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -102,19 +102,16 @@
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.table = new System.Windows.Forms.TableLayoutPanel();
             this.value_multiline = new System.Windows.Forms.CheckBox();
             this.value_fontsize = new System.Windows.Forms.CheckBox();
             this.id_fontsize = new System.Windows.Forms.CheckBox();
-            this.value_padding = new System.Windows.Forms.CheckBox();
             this.value_height = new System.Windows.Forms.CheckBox();
             this.value_width = new System.Windows.Forms.CheckBox();
             this.id_width = new System.Windows.Forms.CheckBox();
             this.id_height = new System.Windows.Forms.CheckBox();
-            this.id_padding = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.id_string = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -127,12 +124,14 @@
             this.groupBox8 = new System.Windows.Forms.GroupBox();
             this.tab_value_width = new System.Windows.Forms.CheckBox();
             this.tab_value_height = new System.Windows.Forms.CheckBox();
-            this.tab_tolerance_height = new System.Windows.Forms.CheckBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.tab_rowcount = new System.Windows.Forms.CheckBox();
-            this.tab_tolerance_width = new System.Windows.Forms.CheckBox();
             this.label19 = new System.Windows.Forms.Label();
             this.tab_stringvalue = new System.Windows.Forms.CheckBox();
+            this.value_padding = new System.Windows.Forms.CheckBox();
+            this.tab_tolerance_height = new System.Windows.Forms.CheckBox();
+            this.id_padding = new System.Windows.Forms.CheckBox();
+            this.tab_tolerance_width = new System.Windows.Forms.CheckBox();
             this.wizardPage4 = new AeroWizard.WizardPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.searchButton = new System.Windows.Forms.Button();
@@ -340,7 +339,7 @@
             this.groupBox1.Controls.Add(this.ResourceFilesStrListView);
             this.groupBox1.Location = new System.Drawing.Point(15, 15);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(353, 381);
+            this.groupBox1.Size = new System.Drawing.Size(353, 385);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Resource files";
@@ -351,7 +350,7 @@
             this.label24.AutoSize = true;
             this.label24.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.World);
             this.label24.ForeColor = System.Drawing.Color.DimGray;
-            this.label24.Location = new System.Drawing.Point(12, 306);
+            this.label24.Location = new System.Drawing.Point(12, 310);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(267, 26);
             this.label24.TabIndex = 10;
@@ -371,7 +370,7 @@
             // ResourceFilesBrowseNum
             // 
             this.ResourceFilesBrowseNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 285);
+            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 289);
             this.ResourceFilesBrowseNum.Name = "ResourceFilesBrowseNum";
             this.ResourceFilesBrowseNum.Size = new System.Drawing.Size(54, 23);
             this.ResourceFilesBrowseNum.TabIndex = 5;
@@ -384,7 +383,7 @@
             this.ResourceFileNumTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ResourceFileNumTextBox.Enabled = false;
-            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 341);
+            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 345);
             this.ResourceFileNumTextBox.Name = "ResourceFileNumTextBox";
             this.ResourceFileNumTextBox.ReadOnly = true;
             this.ResourceFileNumTextBox.Size = new System.Drawing.Size(318, 23);
@@ -394,7 +393,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 289);
+            this.label2.Location = new System.Drawing.Point(13, 293);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(103, 15);
             this.label2.TabIndex = 3;
@@ -435,16 +434,16 @@
             this.ResourceFilesStrListView.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ResourceFilesStrListView.FullRowSelect = true;
             this.ResourceFilesStrListView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem9,
-            listViewItem10,
-            listViewItem11,
-            listViewItem12});
+            listViewItem1,
+            listViewItem2,
+            listViewItem3,
+            listViewItem4});
             this.ResourceFilesStrListView.LabelEdit = true;
             this.ResourceFilesStrListView.Location = new System.Drawing.Point(16, 82);
             this.ResourceFilesStrListView.Name = "ResourceFilesStrListView";
             this.ResourceFilesStrListView.ShowGroups = false;
             this.ResourceFilesStrListView.ShowItemToolTips = true;
-            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 192);
+            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 196);
             this.ResourceFilesStrListView.TabIndex = 0;
             this.ResourceFilesStrListView.UseCompatibleStateImageBehavior = false;
             this.ResourceFilesStrListView.View = System.Windows.Forms.View.Details;
@@ -513,10 +512,10 @@
             this.CPPFilesListView.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.CPPFilesListView.FullRowSelect = true;
             this.CPPFilesListView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem13,
-            listViewItem14,
-            listViewItem15,
-            listViewItem16});
+            listViewItem5,
+            listViewItem6,
+            listViewItem7,
+            listViewItem8});
             this.CPPFilesListView.Location = new System.Drawing.Point(16, 69);
             this.CPPFilesListView.Margin = new System.Windows.Forms.Padding(0);
             this.CPPFilesListView.Name = "CPPFilesListView";
@@ -568,6 +567,10 @@
             // wizardPage3
             // 
             this.wizardPage3.Controls.Add(this.groupBox5);
+            this.wizardPage3.Controls.Add(this.value_padding);
+            this.wizardPage3.Controls.Add(this.tab_tolerance_height);
+            this.wizardPage3.Controls.Add(this.id_padding);
+            this.wizardPage3.Controls.Add(this.tab_tolerance_width);
             this.wizardPage3.Name = "wizardPage3";
             this.wizardPage3.Size = new System.Drawing.Size(737, 407);
             this.wizardPage3.TabIndex = 2;
@@ -641,7 +644,6 @@
             this.groupBox7.Controls.Add(this.label13);
             this.groupBox7.Controls.Add(this.label12);
             this.groupBox7.Controls.Add(this.label11);
-            this.groupBox7.Controls.Add(this.label10);
             this.groupBox7.Controls.Add(this.label9);
             this.groupBox7.Controls.Add(this.label7);
             this.groupBox7.Controls.Add(this.table);
@@ -657,7 +659,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(74, 143);
+            this.label14.Location = new System.Drawing.Point(75, 122);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(58, 15);
             this.label14.TabIndex = 31;
@@ -666,7 +668,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(75, 162);
+            this.label13.Location = new System.Drawing.Point(75, 141);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(38, 15);
             this.label13.TabIndex = 30;
@@ -675,7 +677,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(74, 122);
+            this.label12.Location = new System.Drawing.Point(75, 103);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(77, 15);
             this.label12.TabIndex = 29;
@@ -684,20 +686,11 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(74, 102);
+            this.label11.Location = new System.Drawing.Point(75, 83);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(53, 15);
             this.label11.TabIndex = 28;
             this.label11.Text = "Font size";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(74, 82);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(94, 15);
-            this.label10.TabIndex = 27;
-            this.label10.Text = "Padding internal";
             // 
             // label9
             // 
@@ -722,20 +715,18 @@
             this.table.ColumnCount = 2;
             this.table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 49.99999F));
             this.table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.00001F));
-            this.table.Controls.Add(this.value_multiline, 1, 4);
-            this.table.Controls.Add(this.value_fontsize, 1, 3);
-            this.table.Controls.Add(this.id_fontsize, 0, 3);
-            this.table.Controls.Add(this.value_padding, 1, 2);
+            this.table.Controls.Add(this.value_multiline, 1, 3);
+            this.table.Controls.Add(this.value_fontsize, 1, 2);
+            this.table.Controls.Add(this.id_fontsize, 0, 2);
             this.table.Controls.Add(this.value_height, 1, 1);
             this.table.Controls.Add(this.value_width, 1, 0);
             this.table.Controls.Add(this.id_width, 0, 0);
             this.table.Controls.Add(this.id_height, 0, 1);
-            this.table.Controls.Add(this.id_padding, 0, 2);
-            this.table.Controls.Add(this.checkBox2, 1, 5);
-            this.table.Controls.Add(this.id_string, 0, 6);
+            this.table.Controls.Add(this.checkBox2, 1, 4);
+            this.table.Controls.Add(this.id_string, 0, 5);
             this.table.Location = new System.Drawing.Point(17, 40);
             this.table.Name = "table";
-            this.table.RowCount = 7;
+            this.table.RowCount = 6;
             this.table.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.table.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.table.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
@@ -749,7 +740,7 @@
             // value_multiline
             // 
             this.value_multiline.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.value_multiline.Location = new System.Drawing.Point(31, 83);
+            this.value_multiline.Location = new System.Drawing.Point(31, 63);
             this.value_multiline.Name = "value_multiline";
             this.value_multiline.Size = new System.Drawing.Size(23, 14);
             this.value_multiline.TabIndex = 13;
@@ -761,7 +752,7 @@
             // 
             this.value_fontsize.AccessibleName = "";
             this.value_fontsize.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.value_fontsize.Location = new System.Drawing.Point(31, 63);
+            this.value_fontsize.Location = new System.Drawing.Point(31, 43);
             this.value_fontsize.Name = "value_fontsize";
             this.value_fontsize.Size = new System.Drawing.Size(23, 14);
             this.value_fontsize.TabIndex = 10;
@@ -772,24 +763,13 @@
             // id_fontsize
             // 
             this.id_fontsize.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.id_fontsize.Location = new System.Drawing.Point(3, 63);
+            this.id_fontsize.Location = new System.Drawing.Point(3, 43);
             this.id_fontsize.Name = "id_fontsize";
             this.id_fontsize.Size = new System.Drawing.Size(22, 14);
             this.id_fontsize.TabIndex = 9;
             this.id_fontsize.Tag = "07_Fontsize ID";
             this.id_fontsize.UseVisualStyleBackColor = true;
             this.id_fontsize.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
-            // 
-            // value_padding
-            // 
-            this.value_padding.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.value_padding.Location = new System.Drawing.Point(31, 43);
-            this.value_padding.Name = "value_padding";
-            this.value_padding.Size = new System.Drawing.Size(23, 14);
-            this.value_padding.TabIndex = 7;
-            this.value_padding.Tag = "06_Padding";
-            this.value_padding.UseVisualStyleBackColor = true;
-            this.value_padding.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
             // 
             // value_height
             // 
@@ -835,20 +815,9 @@
             this.id_height.UseVisualStyleBackColor = true;
             this.id_height.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
             // 
-            // id_padding
-            // 
-            this.id_padding.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.id_padding.Location = new System.Drawing.Point(3, 43);
-            this.id_padding.Name = "id_padding";
-            this.id_padding.Size = new System.Drawing.Size(22, 14);
-            this.id_padding.TabIndex = 2;
-            this.id_padding.Tag = "05_Padding ID";
-            this.id_padding.UseVisualStyleBackColor = true;
-            this.id_padding.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
-            // 
             // checkBox2
             // 
-            this.checkBox2.Location = new System.Drawing.Point(31, 103);
+            this.checkBox2.Location = new System.Drawing.Point(31, 83);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(16, 14);
             this.checkBox2.TabIndex = 17;
@@ -858,7 +827,7 @@
             // 
             // id_string
             // 
-            this.id_string.Location = new System.Drawing.Point(3, 123);
+            this.id_string.Location = new System.Drawing.Point(3, 103);
             this.id_string.Name = "id_string";
             this.id_string.Size = new System.Drawing.Size(16, 14);
             this.id_string.TabIndex = 16;
@@ -947,9 +916,7 @@
             // 
             this.groupBox8.Controls.Add(this.tab_value_width);
             this.groupBox8.Controls.Add(this.tab_value_height);
-            this.groupBox8.Controls.Add(this.tab_tolerance_height);
             this.groupBox8.Controls.Add(this.groupBox6);
-            this.groupBox8.Controls.Add(this.tab_tolerance_width);
             this.groupBox8.Controls.Add(this.label19);
             this.groupBox8.Location = new System.Drawing.Point(13, 31);
             this.groupBox8.Name = "groupBox8";
@@ -980,17 +947,6 @@
             this.tab_value_height.UseVisualStyleBackColor = true;
             this.tab_value_height.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
             // 
-            // tab_tolerance_height
-            // 
-            this.tab_tolerance_height.Location = new System.Drawing.Point(112, 64);
-            this.tab_tolerance_height.Name = "tab_tolerance_height";
-            this.tab_tolerance_height.Size = new System.Drawing.Size(14, 15);
-            this.tab_tolerance_height.TabIndex = 5;
-            this.tab_tolerance_height.Tag = "15_Text Height (+tol)";
-            this.tab_tolerance_height.UseVisualStyleBackColor = true;
-            this.tab_tolerance_height.Visible = false;
-            this.tab_tolerance_height.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
-            // 
             // groupBox6
             // 
             this.groupBox6.Controls.Add(this.tab_rowcount);
@@ -1013,17 +969,6 @@
             this.tab_rowcount.UseVisualStyleBackColor = true;
             this.tab_rowcount.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
             // 
-            // tab_tolerance_width
-            // 
-            this.tab_tolerance_width.Location = new System.Drawing.Point(112, 43);
-            this.tab_tolerance_width.Name = "tab_tolerance_width";
-            this.tab_tolerance_width.Size = new System.Drawing.Size(14, 14);
-            this.tab_tolerance_width.TabIndex = 3;
-            this.tab_tolerance_width.Tag = "13_Text Width (+tol)";
-            this.tab_tolerance_width.UseVisualStyleBackColor = true;
-            this.tab_tolerance_width.Visible = false;
-            this.tab_tolerance_width.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
-            // 
             // label19
             // 
             this.label19.AutoSize = true;
@@ -1044,6 +989,58 @@
             this.tab_stringvalue.Text = "String value";
             this.tab_stringvalue.UseVisualStyleBackColor = true;
             this.tab_stringvalue.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
+            // 
+            // value_padding
+            // 
+            this.value_padding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.value_padding.Enabled = false;
+            this.value_padding.Location = new System.Drawing.Point(602, 112);
+            this.value_padding.Name = "value_padding";
+            this.value_padding.Size = new System.Drawing.Size(23, 14);
+            this.value_padding.TabIndex = 7;
+            this.value_padding.Tag = "06_Padding";
+            this.value_padding.UseVisualStyleBackColor = true;
+            this.value_padding.Visible = false;
+            this.value_padding.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
+            // 
+            // tab_tolerance_height
+            // 
+            this.tab_tolerance_height.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tab_tolerance_height.Enabled = false;
+            this.tab_tolerance_height.Location = new System.Drawing.Point(631, 135);
+            this.tab_tolerance_height.Name = "tab_tolerance_height";
+            this.tab_tolerance_height.Size = new System.Drawing.Size(14, 15);
+            this.tab_tolerance_height.TabIndex = 5;
+            this.tab_tolerance_height.Tag = "15_Text Height (+tol)";
+            this.tab_tolerance_height.UseVisualStyleBackColor = true;
+            this.tab_tolerance_height.Visible = false;
+            this.tab_tolerance_height.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
+            // 
+            // id_padding
+            // 
+            this.id_padding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.id_padding.Enabled = false;
+            this.id_padding.Location = new System.Drawing.Point(602, 135);
+            this.id_padding.Name = "id_padding";
+            this.id_padding.Size = new System.Drawing.Size(22, 14);
+            this.id_padding.TabIndex = 2;
+            this.id_padding.Tag = "05_Padding ID";
+            this.id_padding.UseVisualStyleBackColor = true;
+            this.id_padding.Visible = false;
+            this.id_padding.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
+            // 
+            // tab_tolerance_width
+            // 
+            this.tab_tolerance_width.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tab_tolerance_width.Enabled = false;
+            this.tab_tolerance_width.Location = new System.Drawing.Point(631, 111);
+            this.tab_tolerance_width.Name = "tab_tolerance_width";
+            this.tab_tolerance_width.Size = new System.Drawing.Size(14, 14);
+            this.tab_tolerance_width.TabIndex = 3;
+            this.tab_tolerance_width.Tag = "13_Text Width (+tol)";
+            this.tab_tolerance_width.UseVisualStyleBackColor = true;
+            this.tab_tolerance_width.Visible = false;
+            this.tab_tolerance_width.CheckedChanged += new System.EventHandler(this.CheckBoxChanged);
             // 
             // wizardPage4
             // 
@@ -1370,19 +1367,8 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TableLayoutPanel table;
-        private System.Windows.Forms.CheckBox value_multiline;
-        private System.Windows.Forms.CheckBox value_fontsize;
-        private System.Windows.Forms.CheckBox id_fontsize;
-        private System.Windows.Forms.CheckBox value_padding;
-        private System.Windows.Forms.CheckBox value_height;
-        private System.Windows.Forms.CheckBox value_width;
-        private System.Windows.Forms.CheckBox id_width;
-        private System.Windows.Forms.CheckBox id_height;
-        private System.Windows.Forms.CheckBox id_padding;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TabControl Item2IncludeTabs;
@@ -1395,7 +1381,6 @@
         private System.Windows.Forms.CheckBox tab_value_height;
         private System.Windows.Forms.CheckBox tab_stringvalue;
         private AeroWizard.WizardPage wizardPage4;
-        private System.Windows.Forms.CheckBox id_string;
         private System.Windows.Forms.GroupBox groupBox13;
         private System.Windows.Forms.Label label33;
         private System.Windows.Forms.Label label32;
@@ -1416,7 +1401,6 @@
         private System.Windows.Forms.CheckBox filepath;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.Button update_tolerance;
         private System.Windows.Forms.ComboBox show_fail_combobox;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
@@ -1433,5 +1417,17 @@
         private System.Windows.Forms.Button searchButton;
         private System.Windows.Forms.TextBox searchTextBox;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.TableLayoutPanel table;
+        private System.Windows.Forms.CheckBox value_multiline;
+        private System.Windows.Forms.CheckBox value_fontsize;
+        private System.Windows.Forms.CheckBox id_fontsize;
+        private System.Windows.Forms.CheckBox value_padding;
+        private System.Windows.Forms.CheckBox value_height;
+        private System.Windows.Forms.CheckBox value_width;
+        private System.Windows.Forms.CheckBox id_width;
+        private System.Windows.Forms.CheckBox id_height;
+        private System.Windows.Forms.CheckBox id_padding;
+        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.CheckBox id_string;
     }
 }
