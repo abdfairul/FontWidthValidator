@@ -73,7 +73,7 @@ namespace FontValidator
                 var subitem = info.SubItem;
                 subitem.Text = txtEditor.Text;
 
-                var idData = _mResultDatas[Convert.ToInt32(info.Item.Text) - 1];
+                var idData = _mResultDatas[Convert.ToInt16(info.Item.Tag)];
                 var textValues = idData.text_values;
                 StringResult textValue = null;
                 foreach (var i in textValues)
@@ -394,15 +394,19 @@ namespace FontValidator
                     listview.BeginUpdate();
                 });
 
-
+                int index = 0;
                 foreach (var j in _mResultDatas)
                 {
+                    index++;
                     progressCount++;
                     if (j.Equals(_idDrm))
                         continue;
 
                     var item = new ListViewItem(count.ToString());
                     item.UseItemStyleForSubItems = false;
+
+                    // hack: counter for tracking mresultdata
+                    item.Tag = index - 1;
 
                     var needAddItem = true;
                     var needRecolor = false;
@@ -501,7 +505,10 @@ namespace FontValidator
 
                     if (needAddItem)
                     {
-                        listview.InvokeIfRequired(() => { listview.Items.Add(item); });
+                        listview.InvokeIfRequired(() =>
+                        {
+                            listview.Items.Add(item);
+                        });
 
                         ++count;
                     }
@@ -837,17 +844,17 @@ namespace FontValidator
             double height, width;
             if (!double.TryParse(tolerance_height.Text, out height) ||
                 !double.TryParse(tolerance_width.Text, out width) ||
-                height < 0 || height > 100 || width < 0 || width > 100)
+                height < 0 || width < 0)
             {
                 MessageBox.Show("Not a valid input." + Environment.NewLine +
-                                "Please use an integer within 0-100 for input", "Error!",
+                                "Please use positive integer", "Error!",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
                 return false;
             }
 
-            _mReportParam.m_tolerance_height = height / 100;
-            _mReportParam.m_tolerance_width = width / 100;
+            _mReportParam.m_tolerance_height = height;
+            _mReportParam.m_tolerance_width = width;
 
             return true;
         }
@@ -861,11 +868,6 @@ namespace FontValidator
             {
                 foreach (var j in i.text_values)
                 {
-                    j.calc_w_tolerance_width = j.calc_base_width * (1 + _mReportParam.m_tolerance_width / 100);
-                    // tolerance_height
-                    j.calc_w_tolerance_height = j.calc_base_height * (1 + _mReportParam.m_tolerance_height / 100);
-                    // tolerance
-
                     if (i.multiline == "TRUE")
                         j.is_ok_width = true;
 
@@ -873,25 +875,22 @@ namespace FontValidator
                         j.is_ok_width = true;
                     else if (i.multiline == "FALSE")
                     {
-                        var total_width = Convert.ToDouble(i.width.Value)
-                            /*- 2 * Convert.ToDouble(i.padding.Value)*/;
-                        //j.is_ok_width = j.calc_w_tolerance_width < total_width;
+                        var total_width = Convert.ToDouble(i.width.Value);
 
                         j.is_ok_width = j.calc_base_width < total_width;
+                        j.calc_w_tolerance_width = j.calc_base_width - total_width;
 
                         if (!j.is_ok_width)
-                            j.is_ok_width = Math.Abs(j.calc_base_width - total_width) <
-                                            j.calc_base_width * _mReportParam.m_tolerance_width;
+                            j.is_ok_width = Math.Abs(j.calc_base_width - total_width) < _mReportParam.m_tolerance_width;
                     }
 
-                    var total_height = Convert.ToDouble(i.height.Value) /*- 2 * Convert.ToDouble(i.padding.Value)*/;
-                    //j.is_ok_height = (j.calc_w_tolerance_height * j.calc_row_count) < total_height;
+                    var total_height = Convert.ToDouble(i.height.Value);
 
                     j.is_ok_height = j.calc_base_height < total_height;
+                    j.calc_w_tolerance_height = j.calc_base_height - total_height;
 
                     if (!j.is_ok_height)
-                        j.is_ok_height = Math.Abs(j.calc_base_height - total_height) <
-                                         j.calc_base_height * _mReportParam.m_tolerance_height;
+                        j.is_ok_height = Math.Abs(j.calc_base_height - total_height) < _mReportParam.m_tolerance_height;
                 }
             }
 
@@ -906,6 +905,7 @@ namespace FontValidator
             formx.ShowDialog();
             show_relevant_columns();
             _mReportGenerated = true;
+            searchTextBox.Text = "";
         }
 
         public void update_tolerance_drm(double tolerance)
@@ -920,7 +920,7 @@ namespace FontValidator
                     i.widthTest = i.widthValue < i.layoutwidthtotal;
 
                     if (!i.widthTest)
-                        i.widthTest = Math.Abs(i.widthValue - i.layoutwidthtotal) < i.widthValue * tolerance / 100;
+                        i.widthTest = Math.Abs(i.widthValue - i.layoutwidthtotal) < tolerance;
                 }
 
                 populate_report_drm(sender);
@@ -1334,6 +1334,9 @@ namespace FontValidator
                     _searchItem.currentSearchIndexListViewItem, true);
             }
 
+            if (foundItem == null)
+                return;
+
             var subitemindexfound = new List<int>();
 
             listview.TopItem = foundItem;
@@ -1517,10 +1520,7 @@ namespace FontValidator
             Item2IncludePresetComboBox.SelectedIndex = 0;
         }
 
-        private void wizardPage3_Commit(object sender, WizardPageConfirmEventArgs e)
-        {
-            _createReportTabs();
-        }
+        private void wizardPage3_Commit(object sender, WizardPageConfirmEventArgs e) => _createReportTabs();
 
         private void wizardPage4_Initialize(object sender, WizardPageInitEventArgs e)
         {
@@ -1543,7 +1543,6 @@ namespace FontValidator
                 }
             }
 
-
             viewDRMReport.Enabled = _mReportGenerated && _mResultDrmData.Count > 0;
         }
 
@@ -1556,10 +1555,7 @@ namespace FontValidator
             }
         }
 
-        private void searchTextBox_Click(object sender, EventArgs e)
-        {
-            searchTextBox.Clear();
-        }
+        private void searchTextBox_Click(object sender, EventArgs e) => searchTextBox.Clear();
 
         private void show_fail_combobox_Click(object sender, EventArgs e)
         {
@@ -1581,9 +1577,12 @@ namespace FontValidator
             txtEditor.Text = hitInfo.SubItem.Text;
             txtEditor.SelectAll();
             txtEditor.Visible = true;
+            
             txtEditor.Focus();
             txtEditor.Tag = hitInfo;
         }
+
+        private void ResourceFilesStrListView_AfterLabelEdit(object sender, LabelEditEventArgs e) => _mReportGenerated = false;
     }
 
     public static class Extender

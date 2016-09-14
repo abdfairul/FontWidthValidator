@@ -339,7 +339,7 @@
             this.groupBox1.Controls.Add(this.ResourceFilesStrListView);
             this.groupBox1.Location = new System.Drawing.Point(15, 15);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(353, 385);
+            this.groupBox1.Size = new System.Drawing.Size(353, 389);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Resource files";
@@ -350,7 +350,7 @@
             this.label24.AutoSize = true;
             this.label24.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.World);
             this.label24.ForeColor = System.Drawing.Color.DimGray;
-            this.label24.Location = new System.Drawing.Point(12, 310);
+            this.label24.Location = new System.Drawing.Point(12, 314);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(267, 26);
             this.label24.TabIndex = 10;
@@ -370,7 +370,7 @@
             // ResourceFilesBrowseNum
             // 
             this.ResourceFilesBrowseNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 289);
+            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 293);
             this.ResourceFilesBrowseNum.Name = "ResourceFilesBrowseNum";
             this.ResourceFilesBrowseNum.Size = new System.Drawing.Size(54, 23);
             this.ResourceFilesBrowseNum.TabIndex = 5;
@@ -383,7 +383,7 @@
             this.ResourceFileNumTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ResourceFileNumTextBox.Enabled = false;
-            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 345);
+            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 349);
             this.ResourceFileNumTextBox.Name = "ResourceFileNumTextBox";
             this.ResourceFileNumTextBox.ReadOnly = true;
             this.ResourceFileNumTextBox.Size = new System.Drawing.Size(318, 23);
@@ -393,7 +393,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 293);
+            this.label2.Location = new System.Drawing.Point(13, 297);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(103, 15);
             this.label2.TabIndex = 3;
@@ -443,10 +443,11 @@
             this.ResourceFilesStrListView.Name = "ResourceFilesStrListView";
             this.ResourceFilesStrListView.ShowGroups = false;
             this.ResourceFilesStrListView.ShowItemToolTips = true;
-            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 196);
+            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 200);
             this.ResourceFilesStrListView.TabIndex = 0;
             this.ResourceFilesStrListView.UseCompatibleStateImageBehavior = false;
             this.ResourceFilesStrListView.View = System.Windows.Forms.View.Details;
+            this.ResourceFilesStrListView.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.ResourceFilesStrListView_AfterLabelEdit);
             this.ResourceFilesStrListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.ListView_ColumnClick);
             this.ResourceFilesStrListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ListView_KeyDown);
             this.ResourceFilesStrListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListView_MouseDoubleClick);
@@ -1237,7 +1238,7 @@
             this.groupBox13.Size = new System.Drawing.Size(275, 66);
             this.groupBox13.TabIndex = 0;
             this.groupBox13.TabStop = false;
-            this.groupBox13.Text = "Tolerance (%)";
+            this.groupBox13.Text = "Tolerance (pixel)";
             // 
             // update_tolerance
             // 

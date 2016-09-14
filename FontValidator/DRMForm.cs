@@ -33,10 +33,10 @@ namespace FontValidator
         private void button1_Click(object sender, EventArgs e)
         {
             double width;
-            if (!double.TryParse(textBox1.Text, out width) || width < 0 || width > 100)
+            if (!double.TryParse(textBox1.Text, out width) || width < 0)
             {
                 MessageBox.Show("Not a valid input." + Environment.NewLine +
-                    "Please use an integer within 0-100 for input", "Error!",
+                    "Please use positive integer", "Error!",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
                 return;
