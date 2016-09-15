@@ -193,7 +193,7 @@
             this.wizardControl.Pages.Add(this.wizardPage4);
             this.wizardControl.Size = new System.Drawing.Size(784, 561);
             this.wizardControl.TabIndex = 0;
-            this.wizardControl.Title = "Font Validator";
+            this.wizardControl.Title = "UI Text Validator";
             this.wizardControl.TitleIcon = ((System.Drawing.Icon)(resources.GetObject("wizardControl.TitleIcon")));
             // 
             // wizardPage1
@@ -339,7 +339,7 @@
             this.groupBox1.Controls.Add(this.ResourceFilesStrListView);
             this.groupBox1.Location = new System.Drawing.Point(15, 15);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(353, 389);
+            this.groupBox1.Size = new System.Drawing.Size(353, 376);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Resource files";
@@ -350,7 +350,7 @@
             this.label24.AutoSize = true;
             this.label24.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.World);
             this.label24.ForeColor = System.Drawing.Color.DimGray;
-            this.label24.Location = new System.Drawing.Point(12, 314);
+            this.label24.Location = new System.Drawing.Point(12, 301);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(267, 26);
             this.label24.TabIndex = 10;
@@ -370,7 +370,7 @@
             // ResourceFilesBrowseNum
             // 
             this.ResourceFilesBrowseNum.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 293);
+            this.ResourceFilesBrowseNum.Location = new System.Drawing.Point(280, 280);
             this.ResourceFilesBrowseNum.Name = "ResourceFilesBrowseNum";
             this.ResourceFilesBrowseNum.Size = new System.Drawing.Size(54, 23);
             this.ResourceFilesBrowseNum.TabIndex = 5;
@@ -383,7 +383,7 @@
             this.ResourceFileNumTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ResourceFileNumTextBox.Enabled = false;
-            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 349);
+            this.ResourceFileNumTextBox.Location = new System.Drawing.Point(16, 336);
             this.ResourceFileNumTextBox.Name = "ResourceFileNumTextBox";
             this.ResourceFileNumTextBox.ReadOnly = true;
             this.ResourceFileNumTextBox.Size = new System.Drawing.Size(318, 23);
@@ -393,7 +393,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 297);
+            this.label2.Location = new System.Drawing.Point(13, 284);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(103, 15);
             this.label2.TabIndex = 3;
@@ -443,7 +443,7 @@
             this.ResourceFilesStrListView.Name = "ResourceFilesStrListView";
             this.ResourceFilesStrListView.ShowGroups = false;
             this.ResourceFilesStrListView.ShowItemToolTips = true;
-            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 200);
+            this.ResourceFilesStrListView.Size = new System.Drawing.Size(318, 187);
             this.ResourceFilesStrListView.TabIndex = 0;
             this.ResourceFilesStrListView.UseCompatibleStateImageBehavior = false;
             this.ResourceFilesStrListView.View = System.Windows.Forms.View.Details;
@@ -1055,6 +1055,7 @@
             this.wizardPage4.Controls.Add(this.Generate);
             this.wizardPage4.Controls.Add(this.reporttab);
             this.wizardPage4.Controls.Add(this.groupBox13);
+            this.wizardPage4.HelpText = "";
             this.wizardPage4.Name = "wizardPage4";
             this.wizardPage4.Size = new System.Drawing.Size(737, 407);
             this.wizardPage4.TabIndex = 3;
@@ -1292,6 +1293,7 @@
             this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.wizardControl);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.HelpButton = true;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "UIWizard";
             this.Load += new System.EventHandler(this.UIWizard_Load);

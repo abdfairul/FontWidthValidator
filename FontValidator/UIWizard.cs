@@ -64,6 +64,7 @@ namespace FontValidator
             WindowState = FormWindowState.Maximized;
             TopLevel = true;
 
+            
             _lvwColumnSorter = new ListViewColumnSorter();
 
             Action<object, EventArgs> leaveAction = (s, a) =>
